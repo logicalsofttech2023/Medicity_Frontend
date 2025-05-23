@@ -1,0 +1,51 @@
+
+  
+  .best-package-card {
+  
+    flex-direction: row !important; /* Ensure horizontal format */
+    
+    width: auto !important; /* Prevent it from forcing full width */
+    min-width: 98% !important; 
+    max-width: 98% !important;
+  }
+
+  .owl-stage{
+    width: 100% !important;
+  }
+
+  .owl-item{
+    width: 100% !important;
+  }
+
+
+  /* Common arrow style */
+.custom-packages-arrow {
+  position: absolute;
+  top: -130px;
+  z-index: 2;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transform: rotate(0deg);
+}
+
+.custom-packages-arrow:hover {
+  background: #007bff; /* Blue */
+  color: #fff;         /* Icon color white on blue background */
+  border-color: #007bff;
+}
+
+.custom-packages-arrow .next-arrow {
+  right: 0;
+  top: -60px;
+}
+
+.custom-packages-arrow .prev-arrow {
+  right: 60px;
+  top: -60px;
+
+}
+  
