@@ -530,7 +530,7 @@ Version      : 1.0
 												'</div>' +										
 												'<div class="form-wrap ms-2">' +
 													'<label class="col-form-label d-block">&nbsp;</label>' +
-													'<a href="javascript:void(0);" class="trash-icon trash">Delete</a>' +
+													'<a  class="trash-icon trash">Delete</a>' +
 												'</div>' +												
 											'</div>' +			
 										'</div>' +
@@ -967,11 +967,11 @@ Version      : 1.0
 											'<div class="view-imgs">' +
 												'<div class="view-img">' +
 													'<img src="assets/img/doctors-dashboard/clinic-02.jpg" alt="img">' +
-													'<a href="javascript:void(0);">Remove</a>' +
+													'<a >Remove</a>' +
 												'</div>' +
 												'<div class="view-img">' +
 													'<img src="assets/img/doctors-dashboard/clinic-01.jpg" alt="img">' +
-													'<a href="javascript:void(0);">Remove</a>' +
+													'<a >Remove</a>' +
 												'</div>' +
 											'</div>' +
 										'</div>	' +												

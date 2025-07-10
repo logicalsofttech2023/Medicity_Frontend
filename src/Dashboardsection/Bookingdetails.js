@@ -426,15 +426,13 @@ const Bookingdetails = () => {
                                 Tests Included:
                               </h6>
                               <div className="d-flex flex-wrap gap-2">
-                                {pack?.test?.map((test, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="badge bg-light text-dark"
-                                  >
-                                    {test}
-                                  </span>
-                                ))}
-                              </div>
+  {pack?.test?.map((test, idx) => (
+    <span key={idx} className="badge bg-light text-dark">
+      {test.test_name}
+    </span>
+  ))}
+</div>
+
                             </div>
                           </div>
                           <button

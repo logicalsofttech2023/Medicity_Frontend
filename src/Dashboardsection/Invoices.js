@@ -120,7 +120,7 @@ const Invoices = () => {
                       <tr>
                         <td>
                           <a
-                            href="javascript:void(0);"
+                            
                             className="link-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#invoice_view"
@@ -149,13 +149,13 @@ const Invoices = () => {
                         <td>
                           <div className="action-item">
                             <a
-                              href="javascript:void(0);"
+                              
                               data-bs-toggle="modal"
                               data-bs-target="#invoice_view"
                             >
                               <i className="isax isax-link-2" />
                             </a>
-                            <a href="javascript:void(0);">
+                            <a >
                               <i className="isax isax-import" />
                             </a>
                           </div>
@@ -164,7 +164,7 @@ const Invoices = () => {
                       <tr>
                         <td>
                           <a
-                            href="javascript:void(0);"
+                            
                             className="link-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#invoice_view"
@@ -193,13 +193,13 @@ const Invoices = () => {
                         <td>
                           <div className="action-item">
                             <a
-                              href="javascript:void(0);"
+                              
                               data-bs-toggle="modal"
                               data-bs-target="#invoice_view"
                             >
                               <i className="isax isax-link-2" />
                             </a>
-                            <a href="javascript:void(0);">
+                            <a >
                               <i className="isax isax-import" />
                             </a>
                           </div>
@@ -208,7 +208,7 @@ const Invoices = () => {
                       <tr>
                         <td>
                           <a
-                            href="javascript:void(0);"
+                            
                             className="link-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#invoice_view"
@@ -237,13 +237,13 @@ const Invoices = () => {
                         <td>
                           <div className="action-item">
                             <a
-                              href="javascript:void(0);"
+                              
                               data-bs-toggle="modal"
                               data-bs-target="#invoice_view"
                             >
                               <i className="isax isax-link-2" />
                             </a>
-                            <a href="javascript:void(0);">
+                            <a >
                               <i className="isax isax-import" />
                             </a>
                           </div>
@@ -252,7 +252,7 @@ const Invoices = () => {
                       <tr>
                         <td>
                           <a
-                            href="javascript:void(0);"
+                            
                             className="link-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#invoice_view"
@@ -281,13 +281,13 @@ const Invoices = () => {
                         <td>
                           <div className="action-item">
                             <a
-                              href="javascript:void(0);"
+                              
                               data-bs-toggle="modal"
                               data-bs-target="#invoice_view"
                             >
                               <i className="isax isax-link-2" />
                             </a>
-                            <a href="javascript:void(0);">
+                            <a >
                               <i className="isax isax-import" />
                             </a>
                           </div>
@@ -296,7 +296,7 @@ const Invoices = () => {
                       <tr>
                         <td>
                           <a
-                            href="javascript:void(0);"
+                            
                             className="link-primary"
                             data-bs-toggle="modal"
                             data-bs-target="#invoice_view"
@@ -325,13 +325,13 @@ const Invoices = () => {
                         <td>
                           <div className="action-item">
                             <a
-                              href="javascript:void(0);"
+                              
                               data-bs-toggle="modal"
                               data-bs-target="#invoice_view"
                             >
                               <i className="isax isax-link-2" />
                             </a>
-                            <a href="javascript:void(0);">
+                            <a >
                               <i className="isax isax-import" />
                             </a>
                           </div>
@@ -404,7 +404,7 @@ const Invoices = () => {
                 <h5>21 Mar 2024</h5>
                 <ul>
                   <li>
-                    <a href="javascript:void(0);" className="print-link">
+                    <a  className="print-link">
                       <i className="isax isax-printer" />
                     </a>
                   </li>

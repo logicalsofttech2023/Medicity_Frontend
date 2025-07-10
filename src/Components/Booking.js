@@ -3,11 +3,14 @@ import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Navigate, useNavigate } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
+import Swal from "sweetalert2";
 
 const Booking = () => {
   const Navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState();
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
   const [selectedSlot, setSelectedSlot] = useState("07:00 AM - 08:00 AM");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const slots = [
     "06:00 AM - 07:00 AM",
@@ -62,35 +65,92 @@ const Booking = () => {
   };
 
   const BookAppoinment = () => {
-    const formData = new FormData();
-    formData.append("userId", secureLocalStorage.getItem("medicityuser"));
-    formData.append("appointmentDate", selectedDate);
-    formData.append("appointmentTime", selectedSlot);
-    formData.append("serviceName", serviceName);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("duration", duration);
-    formData.append("customerName", customerName);
-    formData.append("customerPhone", customerPhone);
-    formData.append("customerEmail", customerEmail);
-    formData.append("customerAddress", customerAddress);
-    formData.append("clinicName_hpName_drName", clinicName_hpName_drName);
-    formData.append("testName", testName);
-    formData.append("image", image);
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}addAppointment`, formData)
-      .then((res) => {
-        toast.success(res.data.message);
-        setTimeout(() => {
+  const formData = new FormData();
+  formData.append("userId", secureLocalStorage.getItem("medicityuser"));
+  formData.append("appointmentDate", selectedDate);
+  formData.append("appointmentTime", selectedSlot);
+  formData.append("serviceName", serviceName);
+  formData.append("description", description);
+  formData.append("price", price);
+  formData.append("duration", duration);
+  formData.append("customerName", customerName);
+  formData.append("customerPhone", customerPhone);
+  formData.append("customerEmail", customerEmail);
+  formData.append("customerAddress", customerAddress);
+  formData.append("clinicName_hpName_drName", clinicName_hpName_drName);
+  formData.append("testName", testName);
+  formData.append("image", image);
+  
+  setIsSubmitting(true);
+
+  axios
+    .post(`${process.env.REACT_APP_API_KEY}addAppointment`, formData)
+    .then((res) => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Booking Successful!',
+        html: `
+          <div>
+            <p>${res.data.message}</p>
+            <p class="mt-3"><strong>Need Help?</strong></p>
+            <p><i class="fas fa-phone me-2"></i> Call us: <a href="tel:7099060888">7099060888</a></p>
+          </div>
+        `,
+        confirmButtonText: 'Go to Dashboard',
+        showCancelButton: true,
+        cancelButtonText: 'View Details',
+        width: '90%',
+        maxWidth: '500px',
+        backdrop: true
+      }).then((result) => {
+        if (result.isConfirmed) {
           Navigate("/Dashboard");
-        }, 3000);
-      })
-      .catch((error) => {
-        console.log(error);
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          Navigate(`/Dashboard`);
+        }
       });
-  };
+    })
+    .catch((error) => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Booking Failed',
+        html: `
+          <div>
+            <p>${error.response?.data?.message || "Something went wrong"}</p>
+            <p class="mt-3"><strong>Need Help?</strong></p>
+            <p><i class="fas fa-phone me-2"></i> Call us: <a href="tel:7099060888">7099060888</a></p>
+          </div>
+        `,
+        confirmButtonText: 'Try Again',
+        cancelButtonText: 'Cancel',
+        width: '90%',
+        maxWidth: '500px',
+        backdrop: true
+      });
+    })
+    .finally(() => {
+      setIsSubmitting(false);
+    });
+};
+
+  let userId = secureLocalStorage.getItem("medicityuser");
 
   const handleNext = () => {
+    if (!userId) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to book appoinment",
+        confirmButtonText: "Go to Login",
+        showCancelButton: true,
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Navigate("/login");
+        }
+      });
+      return;
+    }
     let newErrors = {};
 
     if (activeStep === 1) {
@@ -99,13 +159,43 @@ const Booking = () => {
     }
 
     if (activeStep === 2) {
-      if (!customerName) newErrors.customerName = "Full name is required";
-      if (!customerPhone) newErrors.customerPhone = "Phone number is required";
-      if (!customerEmail) newErrors.customerEmail = "Email is required";
-      if (!clinicName_hpName_drName)
+      // Name validation
+      if (!customerName?.trim()) {
+        newErrors.customerName = "Full name is required";
+      } else if (customerName.trim().length < 3) {
+        newErrors.customerName = "Name must be at least 3 characters";
+      } else if (!/^[a-zA-Z\s]*$/.test(customerName)) {
+        newErrors.customerName = "Name can only contain letters and spaces";
+      }
+
+      // Phone validation
+      if (!customerPhone?.trim()) {
+        newErrors.customerPhone = "Phone number is required";
+      } else if (!/^[0-9]{10}$/.test(customerPhone)) {
+        newErrors.customerPhone = "Enter a valid 10-digit phone number";
+      }
+
+      // Email validation
+      if (!customerEmail?.trim()) {
+        newErrors.customerEmail = "Email is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+        newErrors.customerEmail = "Enter a valid email address";
+      }
+
+      // Clinic/Hospital/Doctor name validation
+      if (!clinicName_hpName_drName?.trim()) {
         newErrors.clinicName_hpName_drName =
           "Clinic/Hospital/Doctor name is required";
-      if (!testName) newErrors.testName = "Test name is required";
+      } else if (clinicName_hpName_drName.trim().length < 3) {
+        newErrors.clinicName_hpName_drName = "Must be at least 3 characters";
+      }
+
+      // Test name validation
+      if (!testName?.trim()) {
+        newErrors.testName = "Test name is required";
+      } else if (testName.trim().length < 2) {
+        newErrors.testName = "Test name too short";
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -204,7 +294,7 @@ const Booking = () => {
                             Back
                           </a>
                           <a
-                            // href="javascript:void(0);"
+                            //
                             onClick={(e) => {
                               e.preventDefault(); // Prevent the default anchor click behavior
                               handleNext(); // Move to the next step
@@ -313,7 +403,7 @@ const Booking = () => {
                       <div className="card-footer">
                         <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
                           <a
-                            // href="javascript:void(0);"
+                            //
                             onClick={(e) => {
                               e.preventDefault(); // Prevent the default anchor click behavior
                               handleBack(); // Move to the previous step
@@ -324,7 +414,7 @@ const Booking = () => {
                             Back
                           </a>
                           <a
-                            // href="javascript:void(0);"
+                            //
                             onClick={(e) => {
                               e.preventDefault(); // Prevent the default anchor click behavior
                               handleNext(); // Move to the previous step
@@ -347,21 +437,23 @@ const Booking = () => {
                           <div className="card-body pb-1">
                             <div className="row">
                               <h6 className="mb-2">Basic Details</h6>
+
+                              {/* Fullname */}
                               <div className="col-lg-6 col-md-6">
                                 <div className="mb-3">
                                   <label className="form-label">
-                                    Fullname as per Adhaar Card
+                                    Fullname as per Aadhaar Card
                                   </label>
                                   <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Fullname as per Aadhaar Card"
                                     value={customerName}
                                     onChange={(e) =>
                                       setcustomerName(e.target.value)
                                     }
-                                    type="text"
-                                    placeholder="Fullname as per Adhaar Card"
-                                    className="form-control"
+                                    required
                                   />
-
                                   {errors.customerName && (
                                     <span className="text-danger">
                                       {errors.customerName}
@@ -370,21 +462,24 @@ const Booking = () => {
                                 </div>
                               </div>
 
+                              {/* Phone */}
                               <div className="col-lg-6 col-md-6">
                                 <div className="mb-3">
                                   <label className="form-label">
                                     Phone Number
                                   </label>
                                   <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Phone Number"
                                     value={customerPhone}
                                     onChange={(e) =>
                                       setcustomerPhone(e.target.value)
                                     }
-                                    type="text"
-                                    placeholder="Phone Number"
-                                    className="form-control"
+                                    pattern="[0-9]{10}"
+                                    maxLength={10}
+                                    required
                                   />
-
                                   {errors.customerPhone && (
                                     <span className="text-danger">
                                       {errors.customerPhone}
@@ -392,19 +487,22 @@ const Booking = () => {
                                   )}
                                 </div>
                               </div>
+
+                              {/* Email */}
                               <div className="col-lg-6 col-md-6">
                                 <div className="mb-3">
                                   <label className="form-label">
                                     Email Address
                                   </label>
                                   <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Email Address"
                                     value={customerEmail}
                                     onChange={(e) =>
                                       setcustomerEmail(e.target.value)
                                     }
-                                    type="email"
-                                    placeholder="Email Address"
-                                    className="form-control"
+                                    required
                                   />
                                   {errors.customerEmail && (
                                     <span className="text-danger">
@@ -413,19 +511,21 @@ const Booking = () => {
                                   )}
                                 </div>
                               </div>
+
+                              {/* Address */}
                               <div className="col-lg-6 col-md-6">
                                 <div className="mb-3">
                                   <label className="form-label">
                                     Address (If Required)
                                   </label>
                                   <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Address (If Required)"
                                     value={customerAddress}
                                     onChange={(e) =>
                                       setcustomerAddress(e.target.value)
                                     }
-                                    type="text"
-                                    placeholder="Address (If Required)"
-                                    className="form-control"
                                   />
                                   {errors.customerAddress && (
                                     <span className="text-danger">
@@ -434,21 +534,24 @@ const Booking = () => {
                                   )}
                                 </div>
                               </div>
+
+                              {/* Clinic / Hospital / Doctor Name */}
                               <div className="col-lg-6 col-md-6">
                                 <div className="mb-3">
                                   <label className="form-label">
-                                    Name of Clinic | Hospital | Doctors
+                                    Clinic / Hospital / Doctor Name
                                   </label>
                                   <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Name of Clinic | Hospital | Doctors"
                                     value={clinicName_hpName_drName}
                                     onChange={(e) =>
                                       setclinicName_hpName_drName(
                                         e.target.value
                                       )
                                     }
-                                    type="text"
-                                    placeholder="Name of Clinic | Hospital | Doctors"
-                                    className="form-control"
+                                    required
                                   />
                                   {errors.clinicName_hpName_drName && (
                                     <span className="text-danger">
@@ -458,36 +561,38 @@ const Booking = () => {
                                 </div>
                               </div>
 
+                              {/* File Upload */}
                               <div className="col-lg-6">
                                 <div className="mb-3">
                                   <label className="form-label">
                                     Attachment
                                   </label>
                                   <input
-                                    accept="image/*"
+                                    type="file"
+                                    className="form-control"
+                                    accept="image/*,.pdf"
                                     onChange={(e) =>
                                       setimage(e.target.files[0])
                                     }
-                                    type="file"
-                                    className="form-control"
                                   />
-                                  
                                 </div>
                               </div>
+
+                              {/* Test Name */}
                               <div className="col-lg-12">
                                 <div className="mb-3">
                                   <label className="form-label">
                                     Test Name
                                   </label>
                                   <textarea
+                                    className="form-control"
+                                    placeholder="Test Name"
                                     value={testName}
                                     onChange={(e) =>
                                       settestName(e.target.value)
                                     }
-                                    className="form-control"
                                     rows={3}
-                                    placeholder="Test Name "
-                                    defaultValue={""}
+                                    required
                                   />
                                   {errors.testName && (
                                     <span className="text-danger">
@@ -500,12 +605,14 @@ const Booking = () => {
                           </div>
                         </div>
                       </div>
+
+                      {/* Footer */}
                       <div className="card-footer">
                         <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
                           <a
                             onClick={(e) => {
-                              e.preventDefault(); // Prevent the default anchor click behavior
-                              handleBack(); // Move to the previous step
+                              e.preventDefault();
+                              handleBack();
                             }}
                             className="btn btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
                           >
@@ -514,8 +621,8 @@ const Booking = () => {
                           </a>
                           <a
                             onClick={(e) => {
-                              e.preventDefault(); // Prevent the default anchor click behavior
-                              handleNext(); // Move to the next step
+                              e.preventDefault();
+                              handleNext();
                             }}
                             className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
                           >
@@ -527,82 +634,105 @@ const Booking = () => {
                     </div>
                   </fieldset>
                 )}
-                {activeStep === 3 && (
-                  <fieldset id="first">
-                    <div className="card booking-card mb-0">
-                      <div className="card-body booking-body">
-                        <div className="row">
-                          <div className="col-lg-12 d-flex">
-                            <div className="card flex-fill mb-0">
-                              <div className="card-body">
-                                <h6 className="mb-3">Booking Info</h6>
-                                <div style={{ textAlign: "center" }}>
-                                  <img
-                                    style={{ borderRadius: "50%" }}
-                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMcCzXefrN53jgzGJxRx7N92PFVcsw_MnUon8LVfhbwyvAhisXP4gSp2zaw1XngqGUiBg&usqp=CAU"
-                                  />
-                                  <h6>Summary</h6>
-                                  <p>Your appointment booking summary</p>
-                                </div>
-                                <div className="mb-3">
-                                  <label className="form-label">Customer</label>
-                                  <div className="form-plain-text">
-                                    {customerName}
-                                  </div>
-                                </div>
-                                <div className="mb-3">
-                                  <label className="form-label">
-                                    Date &amp; Time
-                                  </label>
-                                  <div className="form-plain-text">
-                                    {selectedSlot}, {selectedDate}
-                                  </div>
-                                </div>
-                                <div className="mb-3">
-                                  <label className="form-label">Service</label>
-                                  <div className="form-plain-text">
-                                    {serviceName}
-                                  </div>
-                                </div>
 
-                                <div className="pt-3 border-top booking-more-info">
-                                  <h6 className="mb-3">Payment Info</h6>
-                                </div>
-                                <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
-                                  <h6 className="text-white">
-                                    Total Amount Payable
-                                  </h6>
-                                  <h6 className="text-white">₹{price}</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="card-footer">
-                        <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
-                          <a
-                            onClick={(e) => {
-                              e.preventDefault(); // Prevent the default anchor click behavior
-                              handleBack(); // Move to the previous step
-                            }}
-                            className="btn btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
-                          >
-                            <i className="isax isax-arrow-left-2 me-1" />
-                            Back
-                          </a>
-                          <a
-                            onClick={BookAppoinment}
-                            className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
-                          >
-                            Book Appoinment
-                            <i className="isax isax-arrow-right-3 ms-1" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </fieldset>
-                )}
+                {activeStep === 3 && (
+  <fieldset id="first">
+    <div className="card booking-card mb-0">
+      <div className="card-body booking-body">
+        <div className="row">
+          <div className="col-lg-12 d-flex">
+            <div className="card flex-fill mb-0">
+              <div className="card-body">
+                <h6 className="mb-3">Booking Info</h6>
+                <div style={{ textAlign: "center" }}>
+                  <img
+                    style={{ borderRadius: "50%", width: "100px", height: "100px", objectFit: "cover" }}
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMcCzXefrN53jgzGJxRx7N92PFVcsw_MnUon8LVfhbwyvAhisXP4gSp2zaw1XngqGUiBg&usqp=CAU"
+                    alt="Booking Summary"
+                  />
+                  <h6 className="mt-2">Summary</h6>
+                  <p className="text-muted">Your appointment booking summary</p>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Customer</label>
+                  <div className="form-plain-text">
+                    {customerName}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">
+                    Date & Time
+                  </label>
+                  <div className="form-plain-text">
+                    {selectedSlot}, {selectedDate}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Service</label>
+                  <div className="form-plain-text">
+                    {serviceName}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-top booking-more-info">
+                  <h6 className="mb-3">Payment Info</h6>
+                </div>
+                <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
+                  <h6 className="text-white">
+                    Total Amount Payable
+                  </h6>
+                  <h6 className="text-white">₹{price}</h6>
+                </div>
+                
+                {/* Added support contact information */}
+                <div className="mt-4 p-3 bg-light rounded text-center">
+  <h6 className="mb-2">Call to Book</h6>
+  <a 
+    href="tel:7099060888" 
+    className="btn btn-outline-primary btn-sm"
+    style={{ whiteSpace: 'nowrap' }}
+  >
+    <i className="fas fa-phone-alt me-2"></i>
+    7099060888
+  </a>
+</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-footer">
+        <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
+          <button
+            onClick={handleBack}
+            className="btn btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
+            disabled={isSubmitting}
+          >
+            <i className="isax isax-arrow-left-2 me-1" />
+            Back
+          </button>
+          <button
+            onClick={BookAppoinment}
+            className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Processing...
+              </>
+            ) : (
+              <>
+                Book Appointment
+                <i className="isax isax-arrow-right-3 ms-1" />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+)}
               </div>
             </div>
           </div>

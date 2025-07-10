@@ -133,11 +133,7 @@ const RecentView = () => {
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                 >
-                  <div
-                    className="card"
-                    key={data?._id}
-                    
-                  >
+                  <div className="card" key={data?._id}>
                     <div
                       onClick={() =>
                         Navigate(`/Healthcheckuppackagedetails/${data?._id}`)
@@ -202,27 +198,33 @@ const RecentView = () => {
                               {data?.packageId?.title}
                             </Link>
                           </h3>
-                          {data?.packageId?.test ? (
-                            data?.packageId?.test
-                              ?.slice(0, 4)
-                              ?.map((testItem, index) => (
-                                <span
-                                  key={index}
-                                  className="badge bg-light text-dark me-2 mb-2"
-                                  style={{
-                                    fontSize: "0.85rem",
-                                    padding: "6px 12px",
-                                    borderRadius: "20px",
-                                  }}
-                                >
-                                  {testItem}
-                                </span>
-                              ))
-                          ) : (
-                            <h6 className="text-light mb-2 flexwrap-wrap">
-                              {data?.packageId?.badges}
-                            </h6>
-                          )}
+                          <div className="d-flex flex-wrap">
+  {Array.isArray(data?.packageId?.test) && data.packageId.test.length > 0 ? (
+    data.packageId.test.slice(0, 4).map((testItem, index) => (
+      <span
+        key={index}
+        className="badge bg-light text-dark me-2 mb-2"
+        style={{
+          fontSize: "0.85rem",
+          padding: "6px 12px",
+          borderRadius: "20px",
+          maxWidth: "120px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+        title={testItem?.test_name || "Unnamed Test"} // Tooltip on hover
+      >
+        {testItem?.test_name || "Unnamed Test"}
+      </span>
+    ))
+  ) : (
+    <h6 className="text-light mb-2">
+      {data?.packageId?.badges || "No tests"}
+    </h6>
+  )}
+</div>
+
                         </div>
 
                         <div className="d-flex align-items-center justify-content-between">

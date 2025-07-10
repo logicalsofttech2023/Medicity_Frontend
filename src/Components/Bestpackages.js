@@ -395,6 +395,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { DNA } from "react-loader-spinner";
+import Swal from "sweetalert2";
 const Bestpackages = () => {
   const [idd, setidd] = useState(null);
   const [categor, setcategor] = useState([]);
@@ -437,7 +438,18 @@ const Bestpackages = () => {
 
   const handleSubmit = (packageId) => {
     if (!userId) {
-      toast.error("Please Login First");
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to add items to your cart",
+        confirmButtonText: "Go to Login",
+        showCancelButton: true,
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
       return;
     }
 
@@ -568,20 +580,34 @@ const Bestpackages = () => {
                             {data?.title}
                           </Link>
                         </h3>
-                        {data?.test ? (
-                          data?.test.map((testItem, index) => (
-                            <span
-                              key={index}
-                              className="badge badge-secondary-transparents"
-                            >
-                              {testItem}
-                            </span>
-                          ))
-                        ) : (
-                          <h6 className="text-light mb-2 flexwrap-wrap">
-                            {data?.badges}
-                          </h6>
-                        )}
+                       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+  {Array.isArray(data?.test) && data.test.length > 0 ? (
+    data.test.map((testItem, index) => (
+      <span
+        key={index}
+        className="badge badge-secondary-transparents"
+        style={{
+          marginRight: '6px',
+          marginBottom: '6px',
+          display: 'inline-block',
+          maxWidth: '120px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+        title={testItem?.test_name} // Tooltip on hover
+      >
+        {testItem?.test_name || 'Unnamed Test'}
+      </span>
+    ))
+  ) : (
+    <h6 className="text-light mb-2 flexwrap-wrap">
+      {data?.badges || 'No tests'}
+    </h6>
+  )}
+</div>
+
+
                         <div className="d-flex active-bar align-items-center justify-content-between p-3">
                           <a href="#" className="text-indigo fw-medium fs-14">
                             Reports in

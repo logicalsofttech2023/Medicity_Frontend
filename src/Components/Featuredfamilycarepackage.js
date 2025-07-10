@@ -7,14 +7,14 @@ import Slider from "react-slick";
 import { DNA } from "react-loader-spinner";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Swal from "sweetalert2";
 
 const Featuredfamilycarepackage = () => {
   const Navigate = useNavigate();
   const [FeaturedData, setFeaturedData] = useState();
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
-    const isInView = useInView(ref, { triggerOnce: true, margin: "-100px" });
-  
+  const isInView = useInView(ref, { triggerOnce: true, margin: "-100px" });
 
   useEffect(() => {
     GetFeaturedList();
@@ -37,8 +37,18 @@ const Featuredfamilycarepackage = () => {
 
   const handleSubmit = (id) => {
     if (!userId) {
-      toast.error("Please Login First");
-
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to add items to your cart",
+        confirmButtonText: "Go to Login",
+        showCancelButton: true,
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Navigate("/login");
+        }
+      });
       return;
     }
     const formData = {
@@ -101,7 +111,7 @@ const Featuredfamilycarepackage = () => {
       },
     ],
   };
-  
+
   return (
     <section className="features-section-sixteen" ref={ref}>
       <Toaster />
@@ -115,93 +125,99 @@ const Featuredfamilycarepackage = () => {
           </p>
         </div>
         <div className="row">
-      <div className="col-md-12">
-        {loading ? (
-          <div className="d-flex justify-content-center my-5">
-            <DNA
-              visible={true}
-              height="80"
-              width="80"
-              ariaLabel="dna-loading"
-              wrapperStyle={{}}
-              wrapperClass="dna-wrapper"
-            />
-          </div>
-        ) : FeaturedData?.length === 0 ? (
-          <div className="no-data">No Doctors Curated Category Found.</div>
-        ) : (
-          <Slider {...settings}>
-            {FeaturedData?.map((data, index) => (
-              <motion.div
-                key={data._id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                
-              >
-                <div
-                  className="feature-package-card"
-                  style={{ background: colors[index % colors.length], width: "302px" }}
-                >
-                  <div className="feature-package-type">
-                    <h3
-                      onClick={() =>
-                        Navigate(`/Healthcheckuppackagedetails/${data?._id}`)
-                      }
-                    >
-                      {data?.title}
-                    </h3>
-                    <div
-                      onClick={() =>
-                        Navigate(`/Healthcheckuppackagedetails/${data?._id}`)
-                      }
-                      className="package-cost"
-                    >
-                      <h6 className="text-primary">
-                        {data?.total_test} Test Included
-                      </h6>
-                      <h5>
-                        ₹{data?.price} <span> ₹{data?.discount_price}</span>
-                      </h5>
-                    </div>
-                    <button
-                      onClick={() => handleSubmit(data._id)}
-                      style={{
-                        background: colorss[index % colorss.length],
-                      }}
-                      className="package-book-btn"
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                  <div
-                    onClick={() =>
-                      Navigate(`/Healthcheckuppackagedetails/${data?._id}`)
-                    }
-                    className="package-img"
+          <div className="col-md-12">
+            {loading ? (
+              <div className="d-flex justify-content-center my-5">
+                <DNA
+                  visible={true}
+                  height="80"
+                  width="80"
+                  ariaLabel="dna-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="dna-wrapper"
+                />
+              </div>
+            ) : FeaturedData?.length === 0 ? (
+              <div className="no-data">No Doctors Curated Category Found.</div>
+            ) : (
+              <Slider {...settings}>
+                {FeaturedData?.map((data, index) => (
+                  <motion.div
+                    key={data._id}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
-                    <img
-                      src={
-                        data?.image2
-                          ? `${process.env.REACT_APP_IMG_URL}${data?.image2}`
-                          : "assets/img/features/package-card-img-03.svg"
-                      }
-                      className="package-img-user"
-                      alt="Img"
-                    />
-                    <img
-                      src="assets/img/bg/package-card-bg-01.png"
-                      className="package-img-bg"
-                      alt="Img"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </Slider>
-        )}
-      </div>
-    </div>
+                    <div
+                      className="feature-package-card"
+                      style={{
+                        background: colors[index % colors.length],
+                        width: "302px",
+                      }}
+                    >
+                      <div className="feature-package-type">
+                        <h3
+                          onClick={() =>
+                            Navigate(
+                              `/Healthcheckuppackagedetails/${data?._id}`
+                            )
+                          }
+                        >
+                          {data?.title}
+                        </h3>
+                        <div
+                          onClick={() =>
+                            Navigate(
+                              `/Healthcheckuppackagedetails/${data?._id}`
+                            )
+                          }
+                          className="package-cost"
+                        >
+                          <h6 className="text-primary">
+                            {data?.total_test} Test Included
+                          </h6>
+                          <h5>
+                            ₹{data?.price} <span> ₹{data?.discount_price}</span>
+                          </h5>
+                        </div>
+                        <button
+                          onClick={() => handleSubmit(data._id)}
+                          style={{
+                            background: colorss[index % colorss.length],
+                          }}
+                          className="package-book-btn"
+                        >
+                          Book Now
+                        </button>
+                      </div>
+                      <div
+                        onClick={() =>
+                          Navigate(`/Healthcheckuppackagedetails/${data?._id}`)
+                        }
+                        className="package-img"
+                      >
+                        <img
+                          src={
+                            data?.image2
+                              ? `${process.env.REACT_APP_IMG_URL}${data?.image2}`
+                              : "assets/img/features/package-card-img-03.svg"
+                          }
+                          className="package-img-user"
+                          alt="Img"
+                        />
+                        <img
+                          src="assets/img/bg/package-card-bg-01.png"
+                          className="package-img-bg"
+                          alt="Img"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </Slider>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

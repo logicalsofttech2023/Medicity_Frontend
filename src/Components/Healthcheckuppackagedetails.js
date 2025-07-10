@@ -1,14 +1,16 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Mainheader from "../Headersection/Mainheader";
 import Footer from "../Footer/Footer";
 import secureLocalStorage from "react-secure-storage";
 import toast, { Toaster } from "react-hot-toast";
+import Swal from "sweetalert2";
 
 const Healthcheckuppackagedetails = () => {
   const [PackageDetails, setPackageDetails] = useState();
   const { id } = useParams();
+  const navigate = useNavigate();
   useEffect(() => {
     GetpackageCategoryList(id);
     window.scrollTo(0, 0);
@@ -21,6 +23,8 @@ const Healthcheckuppackagedetails = () => {
       .post(`${process.env.REACT_APP_API_KEY}getPackageDetails`, data)
       .then((res) => {
         setPackageDetails(res.data.data);
+        console.log(PackageDetails);
+        
       })
       .catch((err) => {});
   };
@@ -49,11 +53,23 @@ const Healthcheckuppackagedetails = () => {
   let userId = secureLocalStorage.getItem("medicityuser");
 
   const handleSubmit = (id) => {
+    console.log(id);
+    
     if (!userId) {
-      toast.error("Please Login First");
-
-      return;
-    }
+          Swal.fire({
+            icon: "error",
+            title: "Login Required",
+            text: "Please login to add items to your cart",
+            confirmButtonText: "Go to Login",
+            showCancelButton: true,
+            cancelButtonText: "Cancel",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              navigate("/login");
+            }
+          });
+          return;
+        }
     const formData = {
       userId: userId,
       packageId: id,
@@ -100,7 +116,7 @@ const Healthcheckuppackagedetails = () => {
                         {PackageDetails?.test?.map((data) => {
                           return (
                             <span className="badge badge-secondary-transparents ">
-                              {data}
+                              {data.test_name}
                             </span>
                           );
                         })}
@@ -282,7 +298,7 @@ const Healthcheckuppackagedetails = () => {
                       Meidicity Labs - Healthy India ki Trusted Lab
                     </h3>
                     <p>
-                      At Medicity Labs, we have a single goal: to give India its
+                      At Klar Labs, we have a single goal: to give India its
                       right to quality diagnostics.
                     </p>
                     <div className="row flex-wrap">
@@ -901,7 +917,7 @@ const Healthcheckuppackagedetails = () => {
                           <div className="accordion-item">
                             <h2 className="accordion-header" id="headingOne">
                               <a
-                                href="javascript:void(0);"
+                                
                                 className="accordion-button collapsed"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapseOne"
@@ -935,7 +951,7 @@ const Healthcheckuppackagedetails = () => {
                           <div className="accordion-item">
                             <h2 className="accordion-header" id="headingTwo">
                               <a
-                                href="javascript:void(0);"
+                                
                                 className="accordion-button collapsed"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapseTwo"
@@ -969,7 +985,7 @@ const Healthcheckuppackagedetails = () => {
                           <div className="accordion-item">
                             <h2 className="accordion-header" id="headingThree">
                               <a
-                                href="javascript:void(0);"
+                                
                                 className="accordion-button collapsed"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapseThree"
@@ -1003,7 +1019,7 @@ const Healthcheckuppackagedetails = () => {
                           <div className="accordion-item">
                             <h2 className="accordion-header" id="headingFour">
                               <a
-                                href="javascript:void(0);"
+                                
                                 className="accordion-button collapsed"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapseFour"
@@ -1037,7 +1053,7 @@ const Healthcheckuppackagedetails = () => {
                           <div className="accordion-item">
                             <h2 className="accordion-header" id="headingFive">
                               <a
-                                href="javascript:void(0);"
+                                
                                 className="accordion-button collapsed"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapseFive"
@@ -1216,10 +1232,10 @@ const Healthcheckuppackagedetails = () => {
 
                   <div className="clinic-details mt-4">
                     <div className="clinic-booking">
-                      <Link className="btn btn-primary" onClick={() => handleSubmit(PackageDetails?.id)}>
+                      <Link className="btn btn-primary" onClick={() => handleSubmit(PackageDetails?._id)}>
                         Add To Cart
                       </Link>{" "}
-                      <Link className="btn btn-success" onClick={() => handleSubmit(PackageDetails?.id)}>
+                      <Link className="btn btn-success" onClick={() => handleSubmit(PackageDetails?._id)}>
                         ₹{PackageDetails?.price}
                         <br />
                         <font className="fs-12">Book Now</font>

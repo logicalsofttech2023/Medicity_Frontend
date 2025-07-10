@@ -65,6 +65,57 @@ const Dashboard = () => {
     indexOfLastItem
   );
 
+
+  const buttonStyle = {
+  padding: "8px 16px",
+  borderRadius: "8px",
+  backgroundColor: "#f8fafc",
+  color: "#334155",
+  border: "1px solid #e2e8f0",
+  fontSize: "14px",
+  fontWeight: "600",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  transition: "all 0.2s ease",
+};
+const getPaginationItems = (currentPage, totalPages) => {
+  const delta = 1;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (
+    let i = 1;
+    i <= totalPages;
+    i++
+  ) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - delta && i <= currentPage + delta)
+    ) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push("...");
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+};
+
+
   
 
   return (
@@ -218,113 +269,62 @@ const Dashboard = () => {
 
                       {/* Pagination */}
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginTop: "24px",
-                          marginBottom: "40px",
-                        }}
-                      >
-                        <button
-                          style={{
-                            padding: "8px 16px",
-                            borderRadius: "8px",
-                            backgroundColor: "#f8fafc",
-                            color: "#334155",
-                            border: "1px solid #e2e8f0",
-                            fontSize: "14px",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            transition: "all 0.2s ease",
-                            ":hover": {
-                              backgroundColor: "#f1f5f9",
-                              borderColor: "#cbd5e1",
-                            },
-                            ":disabled": {
-                              opacity: 0.5,
-                              cursor: "not-allowed",
-                            },
-                          }}
-                          disabled={currentPage === 1}
-                          onClick={() => handlePageChange(currentPage - 1)}
-                        >
-                          <i
-                            className="isax isax-arrow-left-1"
-                            style={{ fontSize: "16px" }}
-                          />
-                          Previous
-                        </button>
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "24px",
+    marginBottom: "40px",
+    flexWrap: "wrap",
+  }}
+>
+  {/* Previous Button */}
+  <button
+    style={buttonStyle}
+    disabled={currentPage === 1}
+    onClick={() => handlePageChange(currentPage - 1)}
+  >
+    <i className="isax isax-arrow-left-1" style={{ fontSize: "16px" }} />
+    Previous
+  </button>
 
-                        {Array.from(
-                          { length: totalPages },
-                          (_, i) => i + 1
-                        ).map((page) => (
-                          <button
-                            key={page}
-                            style={{
-                              padding: "8px 16px",
-                              borderRadius: "8px",
-                              backgroundColor:
-                                page === currentPage ? "#2a7de1" : "#f8fafc",
-                              color: page === currentPage ? "white" : "#334155",
-                              border: `1px solid ${
-                                page === currentPage ? "#2a7de1" : "#e2e8f0"
-                              }`,
-                              fontSize: "14px",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              transition: "all 0.2s ease",
-                              ":hover": {
-                                backgroundColor:
-                                  page === currentPage ? "#1e6fd6" : "#f1f5f9",
-                                borderColor:
-                                  page === currentPage ? "#1e6fd6" : "#cbd5e1",
-                              },
-                            }}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </button>
-                        ))}
+  {/* Page Numbers with Ellipsis */}
+  {getPaginationItems(currentPage, totalPages).map((item, idx) =>
+    item === "..." ? (
+      <span key={idx} style={{ padding: "8px", fontSize: "14px" }}>
+        ...
+      </span>
+    ) : (
+      <button
+        key={item}
+        style={{
+          ...buttonStyle,
+          backgroundColor: item === currentPage ? "#2a7de1" : "#f8fafc",
+          color: item === currentPage ? "white" : "#334155",
+          border:
+            item === currentPage
+              ? "1px solid #2a7de1"
+              : "1px solid #e2e8f0",
+        }}
+        onClick={() => handlePageChange(item)}
+      >
+        {item}
+      </button>
+    )
+  )}
 
-                        <button
-                          style={{
-                            padding: "8px 16px",
-                            borderRadius: "8px",
-                            backgroundColor: "#f8fafc",
-                            color: "#334155",
-                            border: "1px solid #e2e8f0",
-                            fontSize: "14px",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            transition: "all 0.2s ease",
-                            ":hover": {
-                              backgroundColor: "#f1f5f9",
-                              borderColor: "#cbd5e1",
-                            },
-                            ":disabled": {
-                              opacity: 0.5,
-                              cursor: "not-allowed",
-                            },
-                          }}
-                          disabled={currentPage === totalPages}
-                          onClick={() => handlePageChange(currentPage + 1)}
-                        >
-                          Next
-                          <i
-                            className="isax isax-arrow-right-1"
-                            style={{ fontSize: "16px" }}
-                          />
-                        </button>
-                      </div>
+  {/* Next Button */}
+  <button
+    style={buttonStyle}
+    disabled={currentPage === totalPages}
+    onClick={() => handlePageChange(currentPage + 1)}
+  >
+    Next
+    <i className="isax isax-arrow-right-1" style={{ fontSize: "16px" }} />
+  </button>
+</div>
+
                     </div>
                   </div>
                 </div>

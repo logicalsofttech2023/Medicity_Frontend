@@ -417,7 +417,7 @@ const Bookingcomplete = () => {
                 <h5>21 Mar 2024</h5>
                 <ul>
                   <li>
-                    <a href="javascript:void(0);" className="print-link">
+                    <a  className="print-link">
                       <i className="fa-solid fa-print" />
                     </a>
                   </li>
@@ -677,7 +677,7 @@ const Bookingcomplete = () => {
                 <h5>21 Mar 2024</h5>
                 <ul>
                   <li>
-                    <a href="javascript:void(0);" className="print-link">
+                    <a  className="print-link">
                       <i className="fa-solid fa-print" />
                     </a>
                   </li>

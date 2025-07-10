@@ -112,7 +112,7 @@ const Descriptions = () => {
                   Prescription
                     </li>
                   <li className="breadcrumb-item active">
-                    Upload Prescription
+                    Upload Prescriptionm
                   </li>
                 </ol>
               </nav>

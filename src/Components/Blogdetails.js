@@ -12,7 +12,7 @@ const Blogdetails = () => {
     const fetchBlogDetails = async () => {
       try {
         const response = await axios.post(
-          `http://157.66.191.24:3088/api/admin/getBlog`,
+          `https://admin.klardaignostics.com/api/admin/getBlog`,
           {
             blogId: blogId,
           }
@@ -166,16 +166,16 @@ const Blogdetails = () => {
                 </div>
                 <h4 className="mb-3">Tags</h4>
                 <div className="d-flex align-items-center flex-wrap blog-tags gap-3 mb-4">
-                  <a href="javascript:void(0);" className="badge">
+                  <a  className="badge">
                     Health Tips
                   </a>
-                  <a href="javascript:void(0);" className="badge">
+                  <a  className="badge">
                     Awareness
                   </a>
-                  <a href="javascript:void(0);" className="badge">
+                  <a  className="badge">
                     Health
                   </a>
-                  <a href="javascript:void(0);" className="badge">
+                  <a  className="badge">
                     Wellness
                   </a>
                 </div> */}

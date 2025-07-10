@@ -1,213 +1,60 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
 import "./booking.css";
 import { DNA } from "react-loader-spinner";
+import Swal from "sweetalert2";
+
 const Bookingform = () => {
-  const [gender, setgender] = useState("Male");
-  const [fullName, setfullName] = useState("");
-  const [relationName, setrelationName] = useState("");
-  const [age, setage] = useState("");
-  const [phone, setphone] = useState("");
-  const [email, setemail] = useState("");
-  const [dob, setdob] = useState("");
-  const [addressId, setaddressId] = useState("");
-  const [genderupdate, setgenderupdate] = useState("");
-  const [fullNameupdate, setfullNameupdate] = useState("");
-  const [relationNameupdate, setrelationNameupdate] = useState("");
-  const [ageupdate, setageupdate] = useState("");
-  const [phoneupdate, setphoneupdate] = useState("");
-  const [emailupdate, setemailupdate] = useState("");
-  const [dobupdate, setdobupdate] = useState("");
-  const [pincode, setpincode] = useState("");
-  const [address, setaddress] = useState("");
-  const [placeType, setplaceType] = useState("");
-  const [landMark, setlandMark] = useState("");
-  const [houseNo, sethouseNo] = useState("");
-  const [pincodeupdate, setpincodeupdate] = useState("");
-  const [addressupdate, setaddressupdate] = useState("");
-  const [placeTypeupdate, setplaceTypeupdate] = useState("");
-  const [landMarkupdate, setlandMarkupdate] = useState("");
-  const [houseNoupdate, sethouseNoupdate] = useState("");
-  const [MemberData, setMemberData] = useState();
-  const [AddressData, setAddressData] = useState();
+  const Navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+
+  // Member form data
+  const [memberForm, setMemberForm] = useState({
+    gender: "Male",
+    fullName: "",
+    relationName: "",
+    age: "",
+    phone: "",
+    email: "",
+    dob: "",
+  });
+
+  // Address form data
+  const [addressForm, setAddressForm] = useState({
+    pincode: "",
+    address: "",
+    placeType: "",
+    landMark: "",
+    houseNo: "",
+  });
+
+  // Booking details
+  const [bookingDetails, setBookingDetails] = useState({
+    selectedDate: new Date().toISOString().split("T")[0],
+    selectedSlot: "07:00 AM - 08:00 AM",
+    selectedAddressId: null,
+    selectedDependants: [],
+    paymentMode: "online",
+    report: "No",
+    paymentStatus: null,
+  });
+
+  // Data from API
+  const [MemberData, setMemberData] = useState([]);
+  const [AddressData, setAddressData] = useState([]);
   const [Loading, setLoading] = useState(true);
-  const [activeFieldset, setActiveFieldset] = useState(1);
 
-  const AddMember = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-      fullName,
-      relationName,
-      age,
-      dob,
-      gender,
-      phone,
-      email,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}member`, formData)
-      .then((res) => {
-        GetMember();
-        toast.success("Member Added Successfully");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
+  // Other state
+  const [bookingid, setbookingid] = useState("");
+  const [addressId, setaddressId] = useState("");
+  const cartIds = localStorage.getItem("cartIds");
+  const paymentInfo = JSON.parse(localStorage.getItem("paymentInfo"));
 
-  useEffect(() => {
-    GetMember();
-  }, [0]);
-  const GetMember = async () => {
-    setLoading(true);
-    const data = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}getMembersByUser`, data)
-      .then((res) => {
-        setMemberData(res.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setLoading(false);
-      });
-  };
-
-  const UpdatedMember = () => {
-    setLoading(true);
-    const data = {
-      memberId: addressId,
-      fullName: fullNameupdate,
-      relationName: relationNameupdate,
-      age: ageupdate,
-      dob: dobupdate,
-      gender: genderupdate,
-      phone: phoneupdate,
-      email: emailupdate,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}updateMember`, data)
-      .then((res) => {
-        GetMember();
-        toast.success("Data Updated Successfully");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  const Deletedmember = async () => {
-    setLoading(true);
-    const data = {
-      memberId: addressId,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}deleteMember`, data)
-      .then((res) => {
-        toast.success(res.data.message);
-        GetMember();
-        setLoading(false);
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-        setLoading(false);
-      });
-  };
-
-  const AddAddress = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-      address,
-      placeType,
-      landMark,
-      houseNo,
-      pincode,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}address`, formData)
-      .then((res) => {
-        GetAddress();
-        toast.success("Address Added Successfully");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    GetAddress();
-  }, [0]);
-  const GetAddress = async () => {
-    setLoading(true);
-    const data = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}getAddressesByUser`, data)
-      .then((res) => {
-        setAddressData(res.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  const UpdatedAddress = () => {
-    setLoading(true);
-    const data = {
-      addressId,
-      address: addressupdate,
-      placeType: placeTypeupdate,
-      landMark: landMarkupdate,
-      houseNo: houseNoupdate,
-      pincode: pincodeupdate,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}updateAddress`, data)
-      .then((res) => {
-        GetAddress();
-        toast.success("Data Updated Successfully");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  const DeletedAddress = async () => {
-    setLoading(true);
-    const data = {
-      addressId,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}deleteAddress`, data)
-      .then((res) => {
-        toast.success(res.data.message);
-        GetAddress();
-        setLoading(false);
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-        setLoading(false);
-      });
-  };
-
-  const [selectedDate, setSelectedDate] = useState();
-  const [selectedSlot, setSelectedSlot] = useState("07:00 AM - 08:00 AM");
-
+  // Time slots
   const slots = [
     "06:00 AM - 07:00 AM",
     "07:00 AM - 08:00 AM",
@@ -224,68 +71,252 @@ const Bookingform = () => {
     "06:00 PM - 07:00 PM",
     "07:00 PM - 08:00 PM",
   ];
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
 
-  const [selectedDependants, setSelectedDependants] = useState([]);
-
-  const [paymentMode, setPaymentMode] = useState("online");
-
-  useEffect(() => {
-    const dependantIdsString = selectedDependants.join(",");
-  }, [selectedDependants]);
-
-  const [dependantIdsString, setDependantIdsString] = useState("");
-
-  const handleCheckboxChange = (id) => {
-    const updated = selectedDependants.includes(id)
-      ? selectedDependants.filter((item) => item !== id)
-      : [...selectedDependants, id];
-
-    setSelectedDependants(updated);
-    setDependantIdsString(updated.join(","));
+  // Handlers for member form
+  const handleMemberChange = (e) => {
+    const { name, value } = e.target;
+    setMemberForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const [report, setReport] = useState("No");
-
-  const handleCheckboxChanges = (e) => {
-    setReport(e.target.checked ? "Yes" : "No");
+  // Handlers for address form
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setAddressForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const cartIds = localStorage.getItem("cartIds");
+  // Handlers for booking details
+  const handleBookingChange = (name, value) => {
+    setBookingDetails((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const paymentInfo = JSON.parse(localStorage.getItem("paymentInfo"));
-  const [bookingid, setbookingid] = useState("");
+  // Navigation between steps
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    }
+  };
 
-  const BookAppoinment = () => {
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToStep = (step) => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(step);
+    }
+  };
+
+  const validateStep = (step) => {
+    switch (step) {
+      case 1:
+        if (bookingDetails.selectedDependants.length === 0) {
+          toast.error("Please select at least one dependant");
+          return false;
+        }
+        return true;
+      case 2:
+        if (!bookingDetails.selectedAddressId) {
+          toast.error("Please select an address");
+          return false;
+        }
+        return true;
+      case 3:
+        if (!bookingDetails.paymentMode) {
+          toast.error("Please select a payment method");
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  // API functions
+  const AddMember = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+        ...memberForm,
+      };
+      await axios.post(`${process.env.REACT_APP_API_KEY}member`, formData);
+      await GetMember();
+      toast.success("Member Added Successfully");
+      document
+        .getElementById("add_dependent")
+        .querySelector(".btn-close")
+        .click();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const GetMember = async () => {
+    setLoading(true);
+    try {
+      const data = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+      };
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_KEY}getMembersByUser`,
+        data
+      );
+      setMemberData(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const UpdatedMember = () => {
     setLoading(true);
     const data = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-      packageIds: cartIds,
-      members: dependantIdsString,
-      address: selectedAddressId,
-      discountAmount: paymentInfo.discount,
-      totalAmount: paymentInfo.totalAmount,
-      payableAmount: paymentInfo.finalTotal,
-      offerAmount: "10",
-      giftAmount: "20",
-      paymentMode: paymentMode,
-      report: report,
-      sampleCollectDate: selectedDate,
-      sampleCollectTime: selectedSlot,
+      memberId: addressId,
+      ...memberForm,
     };
-
     axios
-      .post(`${process.env.REACT_APP_API_KEY}bookedOrder`, data)
+      .post(`${process.env.REACT_APP_API_KEY}updateMember`, data)
       .then((res) => {
-        GetAddress();
-        setbookingid(res.data.data.bookingId);
-        toast.success(res.data.message);
+        GetMember();
+        toast.success("Data Updated Successfully");
+        document
+          .getElementById("edit_dependent")
+          .querySelector(".btn-close")
+          .click();
         setLoading(false);
       })
       .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
         setLoading(false);
       });
+  };
+
+  const Deletedmember = async () => {
+    setLoading(true);
+    const data = {
+      memberId: addressId,
+    };
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_KEY}deleteMember`,
+        data
+      );
+      toast.success(res.data.message);
+      GetMember();
+      document
+        .getElementById("delete_modal")
+        .querySelector(".btn-close")
+        .click();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const AddAddress = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+        ...addressForm,
+      };
+      await axios.post(`${process.env.REACT_APP_API_KEY}address`, formData);
+      await GetAddress();
+      toast.success("Address Added Successfully");
+      document
+        .getElementById("add_dependentt")
+        .querySelector(".btn-close")
+        .click();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    GetMember();
+    GetAddress();
+  }, []);
+
+  const GetAddress = async () => {
+    setLoading(true);
+    try {
+      const data = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+      };
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_KEY}getAddressesByUser`,
+        data
+      );
+      setAddressData(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const UpdatedAddress = () => {
+    setLoading(true);
+    const data = {
+      addressId,
+      ...addressForm,
+    };
+    axios
+      .post(`${process.env.REACT_APP_API_KEY}updateAddress`, data)
+      .then((res) => {
+        GetAddress();
+        toast.success("Data Updated Successfully");
+        document
+          .getElementById("edit_dependentt")
+          .querySelector(".btn-close")
+          .click();
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+      });
+  };
+
+  const DeletedAddress = async () => {
+    setLoading(true);
+    const data = {
+      addressId,
+    };
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_KEY}deleteAddress`,
+        data
+      );
+      toast.success(res.data.message);
+      GetAddress();
+      document
+        .getElementById("delete_modall")
+        .querySelector(".btn-close")
+        .click();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckboxChange = (id) => {
+    const updated = bookingDetails.selectedDependants.includes(id)
+      ? bookingDetails.selectedDependants.filter((item) => item !== id)
+      : [...bookingDetails.selectedDependants, id];
+
+    handleBookingChange("selectedDependants", updated);
+  };
+
+  const handleCheckboxChanges = (e) => {
+    handleBookingChange("report", e.target.checked ? "Yes" : "No");
   };
 
   const get18YearsAgoDate = () => {
@@ -294,14 +325,796 @@ const Bookingform = () => {
     return today.toISOString().split("T")[0];
   };
 
-  const nextFieldset = () => {
-    if (activeFieldset < 3) setActiveFieldset(activeFieldset + 1);
+  const BookAppoinment = async () => {
+    setLoading(true);
+    Swal.fire({
+      title: "Processing Payment",
+      html: "Please wait while we process your payment...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const userId = secureLocalStorage.getItem("medicityuser");
+    const amountToPay = paymentInfo.finalTotal;
+
+    try {
+      // Step 1: Create Razorpay Order
+      const orderResponse = await axios.post(
+        `${process.env.REACT_APP_API_KEY}createRazorpayOrder`,
+        {
+          amount: amountToPay,
+        }
+      );
+
+      const { id: orderId } = orderResponse.data;
+
+      // Step 2: Open Razorpay Checkout
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY,
+        amount: amountToPay * 100,
+        currency: "INR",
+        name: "Medicity Booking",
+        description: "Package Payment",
+        order_id: orderId,
+        handler: async function (response) {
+          try {
+            Swal.fire({
+              title: "Processing Booking",
+              html: "Your payment was successful! Completing your booking...",
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading();
+              },
+            });
+
+            // Step 3: After Payment Success, Call bookedOrder API
+            const bookingData = {
+              userId,
+              packageIds: cartIds.toString(),
+              members: bookingDetails.selectedDependants.join(","),
+              address: bookingDetails.selectedAddressId.toString(),
+              discountAmount: paymentInfo.discount,
+              totalAmount: paymentInfo.totalAmount,
+              payableAmount: paymentInfo.finalTotal,
+              offerAmount: "10",
+              giftAmount: "20",
+              paymentStatus: true,
+              paymentMode: "Online",
+              paymentId: response.razorpay_payment_id,
+              report: bookingDetails.report,
+              sampleCollectDate: bookingDetails.selectedDate,
+              sampleCollectTime: bookingDetails.selectedSlot,
+            };
+
+            const bookRes = await axios.post(
+              `${process.env.REACT_APP_API_KEY}bookedOrder`,
+              bookingData
+            );
+
+            setbookingid(bookRes.data.data.bookingId);
+            handleBookingChange("paymentStatus", "success");
+            GetAddress();
+
+            Swal.fire({
+              icon: "success",
+              title: "Booking Successful!",
+              text: bookRes.data.message,
+              showCancelButton: true,
+              confirmButtonText: "View Booking",
+              cancelButtonText: "Close",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                Navigate(`/Bookingappoinment`);
+              } else {
+                nextStep(); // Only proceed to step 4 if payment was successful
+              }
+            });
+          } catch (error) {
+            handleBookingChange("paymentStatus", "failed");
+            Swal.fire({
+              icon: "error",
+              title: "Booking Failed",
+              text: "Your payment was successful but booking failed. Please contact support.",
+              confirmButtonText: "OK",
+            });
+            console.error("Booking error:", error);
+          }
+        },
+        prefill: {
+          name: "Test User",
+          email: "user@medicity",
+          contact: "1234567890",
+        },
+        theme: {
+          color: "#0e76a8",
+        },
+        modal: {
+          ondismiss: function () {
+            handleBookingChange("paymentStatus", "failed");
+            Swal.fire({
+              icon: "info",
+              title: "Payment Cancelled",
+              text: "You cancelled the payment process",
+              confirmButtonText: "OK",
+            });
+          },
+        },
+      };
+
+      const razor = new window.Razorpay(options);
+      razor.on("payment.failed", function (response) {
+        handleBookingChange("paymentStatus", "failed");
+        Swal.fire({
+          icon: "error",
+          title: "Payment Failed",
+          text: "Payment could not be processed. Please try again.",
+          confirmButtonText: "OK",
+        });
+      });
+      razor.open();
+    } catch (error) {
+      handleBookingChange("paymentStatus", "failed");
+      Swal.fire({
+        icon: "error",
+        title: "Payment Error",
+        text: "Failed to initiate payment. Please try again.",
+        confirmButtonText: "OK",
+      });
+      console.error("Payment error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Function to go to the previous fieldset
-  const prevFieldset = () => {
-    if (activeFieldset > 1) setActiveFieldset(activeFieldset - 1);
-  };
+  const renderStep1 = () => (
+    <div className="card booking-card mb-0">
+      <div className="card-body booking-body">
+        <div className="content doctor-content card">
+          <div className="container">
+            <div className="row">
+              <div className="col-lg-12 col-xl-12">
+                <div className="dashboard-header">
+                  <h3>Dependants</h3>
+                </div>
+
+                {Loading ? (
+                  <div className="d-flex justify-content-center my-5">
+                    <DNA
+                      visible={true}
+                      height="80"
+                      width="80"
+                      ariaLabel="dna-loading"
+                      wrapperStyle={{}}
+                      wrapperClass="dna-wrapper"
+                    />
+                  </div>
+                ) : MemberData?.length > 0 ? (
+                  MemberData.map((data) => (
+                    <div
+                      className="dependent-wrap d-flex align-items-start gap-3"
+                      key={data._id}
+                    >
+                      <input
+                        type="checkbox"
+                        className="form-check-input mt-1"
+                        checked={bookingDetails.selectedDependants.includes(
+                          data._id
+                        )}
+                        onChange={() => handleCheckboxChange(data._id)}
+                      />
+                      <div className="flex-grow-1">
+                        <div className="dependent-info">
+                          <div className="patinet-information">
+                            <div className="patient-info">
+                              <h5>Name: {data?.fullName}</h5>
+                              <ul>
+                                <li>Relationship: {data?.relationName}</li>
+                                <li>Gender: {data?.gender}</li>
+                                <li>Age: {data?.age}</li>
+                              </ul>
+                            </div>
+                          </div>
+                          <div className="blood-info">
+                            <p>Dob: {data?.dob}</p>
+                            <h6>Phone: {data?.phone}</h6>
+                            <h6>Email: {data?.email}</h6>
+                          </div>
+                        </div>
+                        <div className="dependent-status mt-2">
+                          <a
+                            onClick={() => {
+                              setaddressId(data._id);
+                              setMemberForm({
+                                gender: data.gender,
+                                fullName: data.fullName,
+                                relationName: data.relationName,
+                                age: data.age,
+                                phone: data.phone,
+                                email: data.email,
+                                dob: data.dob,
+                              });
+                            }}
+                            className="edit-icon me-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#edit_dependent"
+                          >
+                            <i className="isax isax-edit-2" />
+                          </a>
+                          <a
+                            onClick={() => setaddressId(data._id)}
+                            className="edit-icon"
+                            data-bs-toggle="modal"
+                            data-bs-target="#delete_modal"
+                          >
+                            <i className="isax isax-trash" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">No members found.</div>
+                )}
+
+                {bookingDetails.selectedDependants?.length === 0 && (
+                  <div className="alert alert-danger text-center py-2">
+                    Please select at least one dependant.
+                  </div>
+                )}
+
+                <div className="dashboard-header border-0 m-0">
+                  <ul className="header-list-btns">
+                    <li>
+                      <div className="input-block dash-search-input">
+                        <span className="search-icon">&nbsp;</span>
+                      </div>
+                    </li>
+                  </ul>
+                  <a
+                    href="#"
+                    className="btn btn-md btn-primary-gradient rounded-pill"
+                    data-bs-toggle="modal"
+                    data-bs-target="#add_dependent"
+                  >
+                    Add Dependants
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-footer">
+        <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
+          <Link
+            to="/Checkout"
+            className="btn btn-md btn-dark inline-flex align-items-center rounded-pill"
+          >
+            <i className="isax isax-arrow-left-2 me-1" />
+            Back
+          </Link>
+          <button
+            type="button"
+            className={`btn btn-md btn-primary-gradient inline-flex align-items-center rounded-pill ${
+              bookingDetails.selectedDependants.length === 0 ? "disabled" : ""
+            }`}
+            onClick={nextStep}
+            disabled={bookingDetails.selectedDependants.length === 0}
+          >
+            Select Address & Date-Time
+            <i className="isax isax-arrow-right-3 ms-1" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="card booking-card mb-0">
+      <div className="card-header">
+        <div className="booking-header pb-0">
+          <div className="card mb-0">
+            <div className="card-body">
+              {Loading ? (
+                <div className="d-flex justify-content-center my-5">
+                  <DNA
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="dna-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="dna-wrapper"
+                  />
+                </div>
+              ) : AddressData?.length > 0 ? (
+                AddressData.map((data) => (
+                  <div
+                    className="dependent-wrap d-flex align-items-start gap-3"
+                    key={data._id}
+                  >
+                    <input
+                      type="radio"
+                      name="selectedAddress"
+                      className="form-check-input mt-1"
+                      checked={bookingDetails.selectedAddressId === data._id}
+                      onChange={() =>
+                        handleBookingChange("selectedAddressId", data._id)
+                      }
+                      required
+                    />
+                    <div className="flex-grow-1">
+                      <div className="dependent-info">
+                        <div className="patinet-information">
+                          <div className="patient-info">
+                            <h5>Address: {data?.address}</h5>
+                            <ul>
+                              <li>PlaceType: {data?.placeType}</li>
+                              <li>LandMark: {data?.landMark}</li>
+                              <li>H.No.: {data?.houseNo}</li>
+                              <li>Pincode: {data?.pincode}</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="dependent-status mt-2">
+                        <a
+                          onClick={() => {
+                            setaddressId(data._id);
+                            setAddressForm({
+                              address: data.address,
+                              placeType: data.placeType,
+                              landMark: data.landMark,
+                              houseNo: data.houseNo,
+                              pincode: data.pincode,
+                            });
+                          }}
+                          className="edit-icon me-2"
+                          data-bs-toggle="modal"
+                          data-bs-target="#edit_dependentt"
+                        >
+                          <i className="isax isax-edit-2" />
+                        </a>
+                        <a
+                          onClick={() => setaddressId(data._id)}
+                          className="edit-icon"
+                          data-bs-toggle="modal"
+                          data-bs-target="#delete_modall"
+                        >
+                          <i className="isax isax-trash" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">No addresses found.</div>
+              )}
+
+              {!bookingDetails.selectedAddressId && (
+                <div className="alert alert-danger text-center py-2">
+                  Please select at least one Address.
+                </div>
+              )}
+
+              <div className="dashboard-header border-0 m-0">
+                <ul className="header-list-btns">
+                  <li>
+                    <div className="input-block dash-search-input">
+                      <span className="search-icon">&nbsp;</span>
+                    </div>
+                  </li>
+                </ul>
+                <a
+                  href="#"
+                  className="btn btn-md btn-primary-gradient rounded-pill"
+                  data-bs-toggle="modal"
+                  data-bs-target="#add_dependentt"
+                >
+                  Add Address
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-body booking-body">
+        <div className="card mb-0">
+          <div className="card-body pb-1">
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="card">
+                  <div className="card-body p-2 pt-3">
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={bookingDetails.selectedDate}
+                      onChange={(e) =>
+                        handleBookingChange("selectedDate", e.target.value)
+                      }
+                      min={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="col-lg-6">
+                <div className="card booking-wizard-slots">
+                  <div className="card-body">
+                    {slots.slice(0, 7).map((slot) => (
+                      <label
+                        key={slot}
+                        className={`mb-1 slot-option ${
+                          slot === bookingDetails.selectedSlot
+                            ? "slot-active"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="slot"
+                          value={slot}
+                          checked={slot === bookingDetails.selectedSlot}
+                          onChange={() =>
+                            handleBookingChange("selectedSlot", slot)
+                          }
+                        />
+                        <div className="slot-time">
+                          <p>{slot}</p>
+                          <p className="slot-free">Free</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="col-lg-6">
+                <div className="card booking-wizard-slots">
+                  <div className="card-body">
+                    {slots.slice(7, 20).map((slot) => (
+                      <label
+                        key={slot}
+                        className={`mb-1 slot-option ${
+                          slot === bookingDetails.selectedSlot
+                            ? "slot-active"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="slot"
+                          value={slot}
+                          checked={slot === bookingDetails.selectedSlot}
+                          onChange={() =>
+                            handleBookingChange("selectedSlot", slot)
+                          }
+                        />
+                        <div className="slot-time">
+                          <p>{slot}</p>
+                          <p className="slot-free">Free</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-footer">
+        <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
+          <button
+            className="btn btn-md btn-dark inline-flex align-items-center rounded-pill"
+            onClick={prevStep}
+          >
+            <i className="isax isax-arrow-left-2 me-1" />
+            Back
+          </button>
+          <button
+            type="button"
+            className={`btn btn-primary-gradient inline-flex align-items-center rounded-pill ${
+              !bookingDetails.selectedAddressId ? "disabled" : ""
+            }`}
+            onClick={nextStep}
+            disabled={!bookingDetails.selectedAddressId}
+          >
+            Add Payment Information
+            <i className="isax isax-arrow-right-3 ms-1" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="card booking-card mb-0">
+      <div className="card-body booking-body">
+        <div className="row">
+          <div className="col-lg-6 d-flex">
+            <div className="card flex-fill mb-3 mb-lg-0">
+              <div className="card-body">
+                <h6 className="mb-3">Payment Gateway</h6>
+
+                <div className="mt-3 mb-3 HardCopy_hard__copy__wrapper__aNxlf">
+                  <div className="HardCopy_top__0S83E">
+                    <h6>Hard Copy Reports</h6>
+                    <p>
+                      E-reports will be sent on your SMS, WhatsApp, &amp;
+                      e-mail. Additionally, you can get a hard copy of your
+                      reports by paying ₹150.
+                    </p>
+                  </div>
+                  <div className="card-footer d-flex gap-2 HardCopy_bottom__PpmW_">
+                    <input
+                      type="checkbox"
+                      onChange={handleCheckboxChanges}
+                      className="form-check-input"
+                      id="hardCopyCheckbox"
+                    />
+                    <label
+                      htmlFor="hardCopyCheckbox"
+                      className="form-check-label"
+                    >
+                      Add Hard Copy Reports @ ₹150
+                    </label>
+                  </div>
+
+                  <div className="mt-2">
+                    <strong>Report:</strong> {bookingDetails.report}
+                  </div>
+                </div>
+                <hr />
+                <div className="payment-tabs">
+                  <ul
+                    className="nav nav-pills mb-3 row"
+                    id="pills-tab"
+                    role="tablist"
+                  >
+                    <li className="nav-item col-sm-12 mb-3" role="presentation">
+                      <button
+                        className={`nav-link ${
+                          bookingDetails.paymentMode === "online"
+                            ? "active"
+                            : ""
+                        }`}
+                        id="pills-home-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-home"
+                        type="button"
+                        role="tab"
+                        onClick={() =>
+                          handleBookingChange("paymentMode", "online")
+                        }
+                      >
+                        <img
+                          src="assets/img/icons/payment-icon-05.svg"
+                          className="me-2"
+                          alt=""
+                        />
+                        Pay By Online
+                      </button>
+                    </li>
+                    <li className="nav-item col-sm-12" role="presentation">
+                      <button
+                        className={`nav-link ${
+                          bookingDetails.paymentMode === "cash" ? "active" : ""
+                        }`}
+                        id="pills-profile-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-profile"
+                        type="button"
+                        role="tab"
+                        onClick={() =>
+                          handleBookingChange("paymentMode", "cash")
+                        }
+                      >
+                        Pay by Cash/Card during sample collection
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-6 d-flex">
+            <div className="card flex-fill mb-0">
+              <div className="card-body">
+                <h6 className="mb-3">Booking Info</h6>
+                <div className="mb-3">
+                  <label className="form-label">Date &amp; Time</label>
+                  <div className="form-plain-text">
+                    {bookingDetails.selectedSlot}, {bookingDetails.selectedDate}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Appointment type</label>
+                  <div className="form-plain-text">(Klar Path) </div>
+                </div>
+                <div className="pt-3 border-top booking-more-info">
+                  <h6 className="mb-3">Payment Info</h6>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Echocardiograms</p>
+                    <span className="fw-medium d-block">₹200</span>
+                  </div>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Booking Fees</p>
+                    <span className="fw-medium d-block">₹20</span>
+                  </div>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Tax</p>
+                    <span className="fw-medium d-block">₹18</span>
+                  </div>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Discount</p>
+                    <span className="fw-medium text-danger d-block">-₹15</span>
+                  </div>
+                </div>
+                <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
+                  <h6 className="text-white">Total</h6>
+                  <h6 className="text-white">₹{paymentInfo.totalAmount}</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="card-footer">
+        <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
+          <button
+            className="btn btn-md btn-dark inline-flex align-items-center rounded-pill"
+            onClick={prevStep}
+          >
+            <i className="isax isax-arrow-left-2 me-1" />
+            Back
+          </button>
+          <button
+            onClick={BookAppoinment}
+            className="btn btn-md btn-primary-gradient inline-flex align-items-center rounded-pill"
+            disabled={Loading}
+          >
+            {Loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Processing...
+              </>
+            ) : (
+              <>
+                Confirm &amp; Pay
+                <i className="isax isax-arrow-right-3 ms-1" />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="card booking-card">
+      <div className="card-body booking-body pb-1">
+        <div className="row">
+          <div className="col-lg-8 d-flex">
+            <div className="flex-fill">
+              <div className="card ">
+                <div className="card-header">
+                  <h5 className="d-flex align-items-center flex-wrap rpw-gap-2">
+                    <i className="isax isax-tick-circle5 text-success me-2" />
+                    Booking Confirmed
+                  </h5>
+                </div>
+
+                <div className="card-body pb-1">
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-3">
+                    <h6>Booking Info</h6>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Total Amount</label>
+                        <div className="form-plain-text">
+                          ₹{paymentInfo.totalAmount}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Payable Amount</label>
+                        <div className="form-plain-text">
+                          ₹{paymentInfo.finalTotal}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Date &amp; Time</label>
+                        <div className="form-plain-text">
+                          {bookingDetails.selectedSlot},{" "}
+                          {bookingDetails.selectedDate}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Hard Copy Request</label>
+                        <div className="form-plain-text">
+                          {bookingDetails.report}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">
+                          Clinic Name &amp; Location
+                        </label>
+                        <div className="form-plain-text">
+                          Klar Pathology{" "}
+                          <a className="text-primary">View Location</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-body d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
+                  <div>
+                    <h6 className="mb-1">Need Our Assistance</h6>
+                    <p className="mb-0">
+                      Call us in case you face any Issue on Booking /
+                      Cancellation
+                    </p>
+                  </div>
+                  <a className="btn btn-light rounded-pill">
+                    <i className="isax isax-call5 me-1" />
+                    Call Us
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-4 d-flex">
+            <div className="card flex-fill">
+              <div className="card-body d-flex flex-column justify-content-between">
+                <div className="text-center">
+                  <h6 className="fs-14 mb-2">Booking Number</h6>
+                  <span className="booking-id-badge mb-3">{bookingid}</span>
+                  <span className="d-block mb-3">
+                    <img src="assets/img/icons/payment-qr.svg" alt />
+                  </span>
+                  <p>
+                    Scan this QR Code to Download the details of Appointment
+                  </p>
+                </div>
+                <div>
+                  <a
+                    href="/"
+                    className="btn w-100 btn-md btn-primary-gradient inline-flex align-items-center rounded-pill"
+                  >
+                    Start New Booking
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <Link
+          to="/Checkout"
+          className="btn btn-md btn-dark inline-flex align-items-center rounded-pill m-3"
+        >
+          <i className="isax isax-arrow-left-2 me-1" />
+          Back to Bookings
+        </Link>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -315,748 +1128,42 @@ const Bookingform = () => {
                   className="form-wizard-steps d-sm-flex align-items-center justify-content-center"
                   id="progressbar2"
                 >
-                  <li className="progress-active">
-                    <div className="profile-step">
-                      <span className="multi-steps">1</span>
-                      <div className="step-section">
-                        <h6>Member</h6>
+                  {[1, 2, 3, 4].map((step) => (
+                    <li
+                      key={step}
+                      className={currentStep >= step ? "progress-active" : ""}
+                      onClick={() => currentStep > step && goToStep(step)}
+                      style={{
+                        cursor: currentStep > step ? "pointer" : "default",
+                      }}
+                    >
+                      <div className="profile-step">
+                        <span className="multi-steps">{step}</span>
+                        <div className="step-section">
+                          <h6>
+                            {step === 1 && "Member"}
+                            {step === 2 && "Address & Date & Time"}
+                            {step === 3 && "Payment"}
+                            {step === 4 && "Confirmation"}
+                          </h6>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="profile-step">
-                      <span className="multi-steps">2</span>
-                      <div className="step-section">
-                        <h6>Address & Date &amp; Time</h6>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="profile-step">
-                      <span className="multi-steps">3</span>
-                      <div className="step-section">
-                        <h6>Payment</h6>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="profile-step">
-                      <span className="multi-steps">4</span>
-                      <div className="step-section">
-                        <h6>Confirmation</h6>
-                      </div>
-                    </div>
-                  </li>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div className="booking-widget multistep-form mb-5">
-                <fieldset id="first">
-                  <div className="card booking-card mb-0">
-                    <div className="card-body booking-body">
-                      <div className="content doctor-content card">
-                        <div className="container">
-                          <div className="row">
-                            {/* Profile Sidebar */}
-
-                            {/* / Profile Sidebar */}
-                            <div className="col-lg-12 col-xl-12">
-                              <div className="dashboard-header">
-                                <h3>Dependants</h3>
-                              </div>
-
-                              {/* Depeendent Item */}
-                              {Loading ? (
-                                <div className="d-flex justify-content-center my-5">
-                                  <DNA
-                                    visible={true}
-                                    height="80"
-                                    width="80"
-                                    ariaLabel="dna-loading"
-                                    wrapperStyle={{}}
-                                    wrapperClass="dna-wrapper"
-                                  />
-                                </div>
-                              ) : MemberData?.length > 0 ? (
-                                MemberData.map((data) => (
-                                  <div
-                                    className="dependent-wrap d-flex align-items-start gap-3"
-                                    key={data._id}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      className="form-check-input mt-1"
-                                      checked={selectedDependants.includes(
-                                        data._id
-                                      )}
-                                      onChange={() =>
-                                        handleCheckboxChange(data._id)
-                                      }
-                                    />
-                                    <div className="flex-grow-1">
-                                      <div className="dependent-info">
-                                        <div className="patinet-information">
-                                          <div className="patient-info">
-                                            <h5>Name: {data?.fullName}</h5>
-                                            <ul>
-                                              <li>
-                                                Relationship:{" "}
-                                                {data?.relationName}
-                                              </li>
-                                              <li>Gender: {data?.gender}</li>
-                                              <li>Age: {data?.age}</li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                        <div className="blood-info">
-                                          <p>Dob: {data?.dob}</p>
-                                          <h6>Phone: {data?.phone}</h6>
-                                          <h6>Email: {data?.email}</h6>
-                                        </div>
-                                      </div>
-                                      <div className="dependent-status mt-2">
-                                        <a
-                                          onClick={() => {
-                                            setaddressId(data._id);
-                                            setgenderupdate(data.gender);
-                                            setfullNameupdate(data.fullName);
-                                            setrelationNameupdate(
-                                              data.relationName
-                                            );
-                                            setageupdate(data.age);
-                                            setphoneupdate(data.phone);
-                                            setemailupdate(data.email);
-                                            setdobupdate(data.dob);
-                                          }}
-                                          className="edit-icon me-2"
-                                          data-bs-toggle="modal"
-                                          data-bs-target="#edit_dependent"
-                                        >
-                                          <i className="isax isax-edit-2" />
-                                        </a>
-                                        <a
-                                          onClick={() => setaddressId(data._id)}
-                                          className="edit-icon"
-                                          data-bs-toggle="modal"
-                                          data-bs-target="#delete_modal"
-                                        >
-                                          <i className="isax isax-trash" />
-                                        </a>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="text-center py-4">
-                                  No members found.
-                                </div>
-                              )}
-
-                              {selectedDependants?.length === 0 && (
-                                <div className="alert alert-danger text-center py-2">
-                                  Please select at least one dependant.
-                                </div>
-                              )}
-
-                              <div className="dashboard-header border-0 m-0">
-                                <ul className="header-list-btns">
-                                  <li>
-                                    <div className="input-block dash-search-input">
-                                      <span className="search-icon">
-                                        &nbsp;
-                                      </span>
-                                    </div>
-                                  </li>
-                                </ul>
-                                <a
-                                  href="#"
-                                  className="btn btn-md btn-primary-gradient rounded-pill"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#add_dependent"
-                                >
-                                  Add Dependants
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-footer">
-                      <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
-                        <Link
-                          to="/Checkout"
-                          // href="javascript:void(0);"
-                          className="btn btn-md btn-dark inline-flex align-items-center rounded-pill"
-                        >
-                          <i className="isax isax-arrow-left-2 me-1" />
-                          Back
-                        </Link>
-                        {/* <a
-                          // href="javascript:void(0);"
-
-                          className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
-                        >
-                          Select Address & Date-Time
-                          <i className="isax isax-arrow-right-3 ms-1" />
-                        </a> */}
-                        <button
-                          type="button"
-                          className={`btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill ${
-                            selectedDependants.length === 0 ? "disabled" : ""
-                          }`}
-                        >
-                          Select Address & Date-Time
-                          <i className="isax isax-arrow-right-3 ms-1" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-
-                <fieldset>
-                  <div className="card booking-card mb-0">
-                    <div className="card-header">
-                      <div className="booking-header pb-0">
-                        <div className="card mb-0">
-                          <div className="card-body">
-                            {Loading ? (
-                              <div className="d-flex justify-content-center my-5">
-                                <DNA
-                                  visible={true}
-                                  height="80"
-                                  width="80"
-                                  ariaLabel="dna-loading"
-                                  wrapperStyle={{}}
-                                  wrapperClass="dna-wrapper"
-                                />
-                              </div>
-                            ) : AddressData?.length > 0 ? (
-                              AddressData.map((data) => (
-                                <div
-                                  className="dependent-wrap d-flex align-items-start gap-3"
-                                  key={data._id}
-                                >
-                                  <input
-  type="radio"
-  name="selectedAddress"
-  className="form-check-input mt-1"
-  checked={selectedAddressId === data._id}
-  onChange={() => setSelectedAddressId(data._id)}
-  required
-/>
-                                  <div className="flex-grow-1">
-                                    <div className="dependent-info">
-                                      <div className="patinet-information">
-                                        <div className="patient-info">
-                                          <h5>Address: {data?.address}</h5>
-                                          <ul>
-                                            <li>
-                                              PlaceType: {data?.placeType}
-                                            </li>
-                                            <li>LandMark: {data?.landMark}</li>
-                                            <li>H.No.: {data?.houseNo}</li>
-                                            <li>Pincode: {data?.pincode}</li>
-                                          </ul>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div className="dependent-status mt-2">
-                                      <a
-                                        onClick={() => {
-                                          setaddressId(data._id);
-                                          setaddressupdate(data.address);
-                                          setplaceTypeupdate(data.placeType);
-                                          setlandMarkupdate(data.landMark);
-                                          sethouseNoupdate(data.houseNo);
-                                          setpincodeupdate(data.pincode);
-                                        }}
-                                        // href="javascript:void(0);"
-                                        className="edit-icon me-2"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#edit_dependentt"
-                                      >
-                                        <i className="isax isax-edit-2" />
-                                      </a>
-                                      <a
-                                        onClick={() => {
-                                          setaddressId(data._id);
-                                        }}
-                                        // href="javascript:void(0);"
-                                        className="edit-icon"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#delete_modall"
-                                      >
-                                        <i className="isax isax-trash" />
-                                      </a>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-center py-4">
-                                No members found.
-                              </div>
-                            )}
-
-{!selectedAddressId && (
-  <div className="alert alert-danger text-center py-2">
-    Please select at least one Address.
-  </div>
-)}
-
-                            <div className="dashboard-header border-0 m-0">
-                              <ul className="header-list-btns">
-                                <li>
-                                  <div className="input-block dash-search-input">
-                                    <span className="search-icon">&nbsp;</span>
-                                  </div>
-                                </li>
-                              </ul>
-                              <a
-                                href="#"
-                                className="btn btn-md btn-primary-gradient rounded-pill"
-                                data-bs-toggle="modal"
-                                data-bs-target="#add_dependentt"
-                              >
-                                Add Address
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-body booking-body">
-                      <div className="card mb-0">
-                        <div className="card-body pb-1">
-                          <div className="row">
-                            <div className="col-lg-12">
-                              <div className="card">
-                                <div className="card-body p-2 pt-3">
-                                  <input
-                                    type="date"
-                                    className="form-control"
-                                    value={selectedDate}
-                                    onChange={(e) => {
-                                      setSelectedDate(e.target.value);
-                                    }}
-                                    min={new Date().toISOString().split("T")[0]}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-6">
-                              <div className="card booking-wizard-slots">
-                                <div className="card-body">
-                                  {slots.slice(0, 7).map((slot) => (
-                                    <label
-                                      key={slot}
-                                      className={`mb-1 slot-option ${
-                                        slot === selectedSlot
-                                          ? "slot-active"
-                                          : ""
-                                      }`}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name="slot"
-                                        value={slot}
-                                        checked={slot === selectedSlot}
-                                        onChange={() => setSelectedSlot(slot)}
-                                      />
-                                      <div className="slot-time">
-                                        <p>{slot}</p>
-                                        <p className="slot-free">Free</p>
-                                      </div>
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-6">
-                              <div className="card booking-wizard-slots">
-                                <div className="card-body">
-                                  {slots.slice(7, 20).map((slot) => (
-                                    <label
-                                      key={slot}
-                                      className={`mb-1 slot-option ${
-                                        slot === selectedSlot
-                                          ? "slot-active"
-                                          : ""
-                                      }`}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name="slot"
-                                        value={slot}
-                                        checked={slot === selectedSlot}
-                                        onChange={() => setSelectedSlot(slot)}
-                                      />
-                                      <div className="slot-time">
-                                        <p>{slot}</p>
-                                        <p className="slot-free">Free</p>
-                                      </div>
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-footer">
-                      <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
-                        <a
-                          // href="javascript:void(0);"
-                          className="btn btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
-                        >
-                          <i className="isax isax-arrow-left-2 me-1" />
-                          Back
-                        </a>
-                        {/* <a
-                          // href="javascript:void(0);"
-                          className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
-                        >
-                          Add Payment Information
-                          <i className="isax isax-arrow-right-3 ms-1" />
-                        </a> */}
-
-<button
-  type="button"
-  className={`btn btn-primary-gradient next_btns inline-flex align-items-center rounded-pill ${!selectedAddressId ? "disabled" : ""}`}
-  disabled={!selectedAddressId}  
->
-  Add Payment Information
-  <i className="isax isax-arrow-right-3 ms-1" />
-</button>
-
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-
-                <fieldset>
-                  <div className="card booking-card mb-0">
-                    <div className="card-body booking-body">
-                      <div className="row">
-                        <div className="col-lg-6 d-flex">
-                          <div className="card flex-fill mb-3 mb-lg-0">
-                            <div className="card-body">
-                              <h6 className="mb-3">Payment Gateway</h6>
-
-                              <div className="mt-3 mb-3 HardCopy_hard__copy__wrapper__aNxlf">
-                                <div className="HardCopy_top__0S83E">
-                                  <h6>Hard Copy Reports</h6>
-                                  <p>
-                                    E-reports will be sent on your SMS,
-                                    WhatsApp, &amp; e-mail. Additionally, you
-                                    can get a hard copy of your reports by
-                                    paying ₹150.
-                                  </p>
-                                </div>
-                                <div className="card-footer d-flex gap-2 HardCopy_bottom__PpmW_">
-                                  <input
-                                    type="checkbox"
-                                    onChange={handleCheckboxChanges}
-                                    className="form-check-input"
-                                    id="hardCopyCheckbox"
-                                  />
-                                  <label
-                                    htmlFor="hardCopyCheckbox"
-                                    className="form-check-label"
-                                  >
-                                    Add Hard Copy Reports @ ₹150
-                                  </label>
-                                </div>
-
-                                {/* Optional: Show current value */}
-                                <div className="mt-2">
-                                  <strong>Report:</strong> {report}
-                                </div>
-                              </div>
-                              <hr />
-                              <div className="payment-tabs">
-                                <ul
-                                  className="nav nav-pills mb-3 row"
-                                  id="pills-tab"
-                                  role="tablist"
-                                >
-                                  <li
-                                    className="nav-item col-sm-12 mb-3"
-                                    role="presentation"
-                                  >
-                                    <button
-                                      className={`nav-link ${
-                                        paymentMode === "online" ? "active" : ""
-                                      }`}
-                                      id="pills-home-tab"
-                                      data-bs-toggle="pill"
-                                      data-bs-target="#pills-home"
-                                      type="button"
-                                      role="tab"
-                                      onClick={() => setPaymentMode("online")}
-                                    >
-                                      <img
-                                        src="assets/img/icons/payment-icon-05.svg"
-                                        className="me-2"
-                                        alt=""
-                                      />
-                                      Pay By Online
-                                    </button>
-                                  </li>
-                                  <li
-                                    className="nav-item col-sm-12"
-                                    role="presentation"
-                                  >
-                                    <button
-                                      className={`nav-link ${
-                                        paymentMode === "cash" ? "active" : ""
-                                      }`}
-                                      id="pills-profile-tab"
-                                      data-bs-toggle="pill"
-                                      data-bs-target="#pills-profile"
-                                      type="button"
-                                      role="tab"
-                                      onClick={() => setPaymentMode("cash")}
-                                    >
-                                      Pay by Cash/Card during sample collection
-                                    </button>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-lg-6 d-flex">
-                          <div className="card flex-fill mb-0">
-                            <div className="card-body">
-                              <h6 className="mb-3">Booking Info</h6>
-                              <div className="mb-3">
-                                <label className="form-label">
-                                  Date &amp; Time
-                                </label>
-                                <div className="form-plain-text">
-                                  {selectedSlot}, {selectedDate}
-                                </div>
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">
-                                  Appointment type
-                                </label>
-                                <div className="form-plain-text">
-                                  (Medicity Path){" "}
-                                </div>
-                              </div>
-                              <div className="pt-3 border-top booking-more-info">
-                                <h6 className="mb-3">Payment Info</h6>
-                                <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                                  <p className="mb-0">Echocardiograms</p>
-                                  <span className="fw-medium d-block">
-                                    ₹200
-                                  </span>
-                                </div>
-                                <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                                  <p className="mb-0">Booking Fees</p>
-                                  <span className="fw-medium d-block">₹20</span>
-                                </div>
-                                <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                                  <p className="mb-0">Tax</p>
-                                  <span className="fw-medium d-block">₹18</span>
-                                </div>
-                                <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                                  <p className="mb-0">Discount</p>
-                                  <span className="fw-medium text-danger d-block">
-                                    -₹15
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
-                                <h6 className="text-white">Total</h6>
-                                <h6 className="text-white">
-                                  ₹{paymentInfo.totalAmount}
-                                </h6>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-footer">
-                      <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
-                        <a
-                          // href="javascript:void(0);"
-                          className="btn btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
-                        >
-                          <i className="isax isax-arrow-left-2 me-1" />
-                          Back
-                        </a>
-                        <a
-                          onClick={BookAppoinment}
-                          // href="javascript:void(0);"
-                          className="btn btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
-                        >
-                          Confirm &amp; Pay
-                          <i className="isax isax-arrow-right-3 ms-1" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <div className="card booking-card">
-                    <div className="card-body booking-body pb-1">
-                      <div className="row">
-                        <div className="col-lg-8 d-flex">
-                          <div className="flex-fill">
-                            <div className="card ">
-                              <div className="card-header">
-                                <h5 className="d-flex align-items-center flex-wrap rpw-gap-2">
-                                  <i className="isax isax-tick-circle5 text-success me-2" />
-                                  Booking Confirmed
-                                </h5>
-                              </div>
-
-                              <div className="card-body pb-1">
-                                <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-3">
-                                  <h6>Booking Info</h6>
-                                </div>
-                                <div className="row">
-                                  <div className="col-md-6">
-                                    <div className="mb-3">
-                                      <label className="form-label">
-                                        Total Amount
-                                      </label>
-                                      <div className="form-plain-text">
-                                        ₹{paymentInfo.totalAmount}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="col-md-6">
-                                    <div className="mb-3">
-                                      <label className="form-label">
-                                        Payable Amount
-                                      </label>
-                                      <div className="form-plain-text">
-                                        ₹{paymentInfo.finalTotal}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="col-md-6">
-                                    <div className="mb-3">
-                                      <label className="form-label">
-                                        Date &amp; Time
-                                      </label>
-                                      <div className="form-plain-text">
-                                        {selectedSlot}, {selectedDate}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="col-md-6">
-                                    <div className="mb-3">
-                                      <label className="form-label">
-                                        Hard Copy Request
-                                      </label>
-                                      <div className="form-plain-text">
-                                        {report}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="col-md-6">
-                                    <div className="mb-3">
-                                      <label className="form-label">
-                                        Clinic Name &amp; Location
-                                      </label>
-                                      <div className="form-plain-text">
-                                        Medicity Pathology{" "}
-                                        <a
-                                          // href="javascript:void(0);"
-                                          className="text-primary"
-                                        >
-                                          View Location
-                                        </a>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="card">
-                              <div className="card-body d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between">
-                                <div>
-                                  <h6 className="mb-1">Need Our Assistance</h6>
-                                  <p className="mb-0">
-                                    Call us in case you face any Issue on
-                                    Booking / Cancellation
-                                  </p>
-                                </div>
-                                <a
-                                  // href="javascript:void(0);"
-                                  className="btn btn-light rounded-pill"
-                                >
-                                  <i className="isax isax-call5 me-1" />
-                                  Call Us
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-lg-4 d-flex">
-                          <div className="card flex-fill">
-                            <div className="card-body d-flex flex-column justify-content-between">
-                              <div className="text-center">
-                                <h6 className="fs-14 mb-2">Booking Number</h6>
-                                <span className="booking-id-badge mb-3">
-                                  {bookingid}
-                                </span>
-                                <span className="d-block mb-3">
-                                  <img
-                                    src="assets/img/icons/payment-qr.svg"
-                                    alt
-                                  />
-                                </span>
-                                <p>
-                                  Scan this QR Code to Download the details of
-                                  Appointment
-                                </p>
-                              </div>
-                              <div>
-                                {/* <Link to='/Checkout'
-                                  
-                                  className="btn w-100 mb-3 btn-md btn-dark prev_btns inline-flex align-items-center rounded-pill"
-                                >
-                                  Add To Calendar
-                                </Link> */}
-                                <a
-                                  href="/"
-                                  className="btn w-100 btn-md btn-primary-gradient next_btns inline-flex align-items-center rounded-pill"
-                                >
-                                  Start New Booking
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Link to="/Checkout" className>
-                      <i className="isax isax-arrow-left-2 me-1" />
-                      Back to Bookings
-                    </Link>
-                  </div>
-                </fieldset>
+                {currentStep === 1 && renderStep1()}
+                {currentStep === 2 && renderStep2()}
+                {currentStep === 3 && renderStep3()}
+                {currentStep === 4 && renderStep4()}
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* /Terms */}
-      {/* Cursor */}
-      <div className="mouse-cursor cursor-outer" />
-      <div className="mouse-cursor cursor-inner" />
 
+      {/* Add Dependent Modal */}
       <div className="modal fade custom-modals" id="add_dependent">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1082,8 +1189,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="Full-Name"
-                          value={fullName}
-                          onChange={(e) => setfullName(e.target.value)}
+                          name="fullName"
+                          value={memberForm.fullName}
+                          onChange={handleMemberChange}
                           type="text"
                           required
                           className="form-control"
@@ -1097,8 +1205,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="Relationship"
-                          value={relationName}
-                          onChange={(e) => setrelationName(e.target.value)}
+                          name="relationName"
+                          value={memberForm.relationName}
+                          onChange={handleMemberChange}
                           type="text"
                           required
                           className="form-control"
@@ -1115,9 +1224,10 @@ const Bookingform = () => {
                           <input
                             placeholder="Age"
                             required
-                            value={age}
+                            name="age"
+                            value={memberForm.age}
+                            onChange={handleMemberChange}
                             min={0}
-                            onChange={(e) => setage(e.target.value)}
                             type="number"
                             className="form-control"
                           />
@@ -1132,8 +1242,9 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             required
-                            value={dob}
-                            onChange={(e) => setdob(e.target.value)}
+                            name="dob"
+                            value={memberForm.dob}
+                            onChange={handleMemberChange}
                             type="date"
                             className="form-control"
                             max={get18YearsAgoDate()}
@@ -1150,9 +1261,10 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             placeholder="Phone"
-                            value={phone}
+                            name="phone"
+                            value={memberForm.phone}
+                            onChange={handleMemberChange}
                             required
-                            onChange={(e) => setphone(e.target.value)}
                             type="text"
                             maxLength={10}
                             minLength={10}
@@ -1171,8 +1283,9 @@ const Bookingform = () => {
                           <input
                             placeholder="Email"
                             required
-                            value={email}
-                            onChange={(e) => setemail(e.target.value)}
+                            name="email"
+                            value={memberForm.email}
+                            onChange={handleMemberChange}
                             type="email"
                             className="form-control"
                           />
@@ -1192,8 +1305,8 @@ const Bookingform = () => {
                               name="gender"
                               id="option1"
                               value="Male"
-                              checked={gender === "Male"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={memberForm.gender === "Male"}
+                              onChange={handleMemberChange}
                             />
                             <label className="btn btn-white" htmlFor="option1">
                               Male
@@ -1206,8 +1319,8 @@ const Bookingform = () => {
                               name="gender"
                               id="option2"
                               value="Female"
-                              checked={gender === "Female"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={memberForm.gender === "Female"}
+                              onChange={handleMemberChange}
                             />
                             <label className="btn btn-white" htmlFor="option2">
                               Female
@@ -1220,8 +1333,8 @@ const Bookingform = () => {
                               name="gender"
                               id="option3"
                               value="Others"
-                              checked={gender === "Others"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={memberForm.gender === "Others"}
+                              onChange={handleMemberChange}
                             />
                             <label className="btn btn-white" htmlFor="option3">
                               Others
@@ -1267,6 +1380,7 @@ const Bookingform = () => {
         </div>
       </div>
 
+      {/* Add Address Modal */}
       <div className="modal fade custom-modals" id="add_dependentt">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1292,8 +1406,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="address"
-                          value={address}
-                          onChange={(e) => setaddress(e.target.value)}
+                          name="address"
+                          value={addressForm.address}
+                          onChange={handleAddressChange}
                           type="text"
                           required
                           className="form-control"
@@ -1307,8 +1422,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="placeType"
-                          value={placeType}
-                          onChange={(e) => setplaceType(e.target.value)}
+                          name="placeType"
+                          value={addressForm.placeType}
+                          onChange={handleAddressChange}
                           type="text"
                           required
                           className="form-control"
@@ -1325,9 +1441,10 @@ const Bookingform = () => {
                           <input
                             placeholder="landMark"
                             required
-                            value={landMark}
+                            name="landMark"
+                            value={addressForm.landMark}
+                            onChange={handleAddressChange}
                             min={0}
-                            onChange={(e) => setlandMark(e.target.value)}
                             type="text"
                             className="form-control"
                           />
@@ -1342,8 +1459,9 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             required
-                            value={houseNo}
-                            onChange={(e) => sethouseNo(e.target.value)}
+                            name="houseNo"
+                            value={addressForm.houseNo}
+                            onChange={handleAddressChange}
                             type="number"
                             className="form-control"
                           />
@@ -1359,9 +1477,10 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             placeholder="Pincode"
-                            value={pincode}
+                            name="pincode"
+                            value={addressForm.pincode}
+                            onChange={handleAddressChange}
                             required
-                            onChange={(e) => setpincode(e.target.value)}
                             type="text"
                             className="form-control"
                           />
@@ -1405,8 +1524,8 @@ const Bookingform = () => {
           </div>
         </div>
       </div>
-      {/* /Add Dependent Modal*/}
-      {/* Edit Dependent Modal*/}
+
+      {/* Edit Dependent Modal */}
       <div className="modal fade custom-modals" id="edit_dependent">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1432,8 +1551,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="Full-Name"
-                          value={fullNameupdate}
-                          onChange={(e) => setfullNameupdate(e.target.value)}
+                          name="fullName"
+                          value={memberForm.fullName}
+                          onChange={handleMemberChange}
                           type="text"
                           required
                           className="form-control"
@@ -1447,10 +1567,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="Relationship"
-                          value={relationNameupdate}
-                          onChange={(e) =>
-                            setrelationNameupdate(e.target.value)
-                          }
+                          name="relationName"
+                          value={memberForm.relationName}
+                          onChange={handleMemberChange}
                           type="text"
                           required
                           className="form-control"
@@ -1467,9 +1586,10 @@ const Bookingform = () => {
                           <input
                             placeholder="Age"
                             required
-                            value={ageupdate}
+                            name="age"
+                            value={memberForm.age}
+                            onChange={handleMemberChange}
                             min={0}
-                            onChange={(e) => setageupdate(e.target.value)}
                             type="number"
                             className="form-control"
                           />
@@ -1484,8 +1604,9 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             required
-                            value={dobupdate}
-                            onChange={(e) => setdobupdate(e.target.value)}
+                            name="dob"
+                            value={memberForm.dob}
+                            onChange={handleMemberChange}
                             type="date"
                             className="form-control"
                           />
@@ -1501,9 +1622,10 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             placeholder="Phone"
-                            value={phoneupdate}
+                            name="phone"
+                            value={memberForm.phone}
+                            onChange={handleMemberChange}
                             required
-                            onChange={(e) => setphoneupdate(e.target.value)}
                             type="text"
                             maxLength={10}
                             minLength={10}
@@ -1522,8 +1644,9 @@ const Bookingform = () => {
                           <input
                             placeholder="Email"
                             required
-                            value={emailupdate}
-                            onChange={(e) => setemailupdate(e.target.value)}
+                            name="email"
+                            value={memberForm.email}
+                            onChange={handleMemberChange}
                             type="email"
                             className="form-control"
                           />
@@ -1541,12 +1664,15 @@ const Bookingform = () => {
                               type="radio"
                               className="btn-check"
                               name="gender"
-                              id="option1"
+                              id="option1edit"
                               value="Male"
-                              checked={genderupdate === "Male"}
-                              onChange={(e) => setgenderupdate(e.target.value)}
+                              checked={memberForm.gender === "Male"}
+                              onChange={handleMemberChange}
                             />
-                            <label className="btn btn-white" htmlFor="option1">
+                            <label
+                              className="btn btn-white"
+                              htmlFor="option1edit"
+                            >
                               Male
                             </label>
                           </div>
@@ -1555,12 +1681,15 @@ const Bookingform = () => {
                               type="radio"
                               className="btn-check"
                               name="gender"
-                              id="option2"
+                              id="option2edit"
                               value="Female"
-                              checked={genderupdate === "Female"}
-                              onChange={(e) => setgenderupdate(e.target.value)}
+                              checked={memberForm.gender === "Female"}
+                              onChange={handleMemberChange}
                             />
-                            <label className="btn btn-white" htmlFor="option2">
+                            <label
+                              className="btn btn-white"
+                              htmlFor="option2edit"
+                            >
                               Female
                             </label>
                           </div>
@@ -1569,12 +1698,15 @@ const Bookingform = () => {
                               type="radio"
                               className="btn-check"
                               name="gender"
-                              id="option3"
+                              id="option3edit"
                               value="Others"
-                              checked={genderupdate === "Others"}
-                              onChange={(e) => setgenderupdate(e.target.value)}
+                              checked={memberForm.gender === "Others"}
+                              onChange={handleMemberChange}
                             />
-                            <label className="btn btn-white" htmlFor="option3">
+                            <label
+                              className="btn btn-white"
+                              htmlFor="option3edit"
+                            >
                               Others
                             </label>
                           </div>
@@ -1595,9 +1727,9 @@ const Bookingform = () => {
                   </a>
                   <button
                     onClick={UpdatedMember}
-                    type="submit"
+                    type="button"
                     className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
+                    disabled={Loading}
                   >
                     {Loading ? (
                       <>
@@ -1618,6 +1750,8 @@ const Bookingform = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Address Modal */}
       <div className="modal fade custom-modals" id="edit_dependentt">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1643,8 +1777,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="address"
-                          value={addressupdate}
-                          onChange={(e) => setaddressupdate(e.target.value)}
+                          name="address"
+                          value={addressForm.address}
+                          onChange={handleAddressChange}
                           type="text"
                           required
                           className="form-control"
@@ -1658,8 +1793,9 @@ const Bookingform = () => {
                         </label>
                         <input
                           placeholder="placeType"
-                          value={placeTypeupdate}
-                          onChange={(e) => setplaceTypeupdate(e.target.value)}
+                          name="placeType"
+                          value={addressForm.placeType}
+                          onChange={handleAddressChange}
                           type="text"
                           required
                           className="form-control"
@@ -1676,9 +1812,10 @@ const Bookingform = () => {
                           <input
                             placeholder="landMark"
                             required
-                            value={landMarkupdate}
+                            name="landMark"
+                            value={addressForm.landMark}
+                            onChange={handleAddressChange}
                             min={0}
-                            onChange={(e) => setlandMarkupdate(e.target.value)}
                             type="text"
                             className="form-control"
                           />
@@ -1693,8 +1830,9 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             required
-                            value={houseNoupdate}
-                            onChange={(e) => sethouseNoupdate(e.target.value)}
+                            name="houseNo"
+                            value={addressForm.houseNo}
+                            onChange={handleAddressChange}
                             type="number"
                             className="form-control"
                           />
@@ -1710,9 +1848,10 @@ const Bookingform = () => {
                         <div className="form-icon">
                           <input
                             placeholder="pincode"
-                            value={pincodeupdate}
+                            name="pincode"
+                            value={addressForm.pincode}
+                            onChange={handleAddressChange}
                             required
-                            onChange={(e) => setpincodeupdate(e.target.value)}
                             type="text"
                             className="form-control"
                           />
@@ -1733,9 +1872,9 @@ const Bookingform = () => {
                   </a>
                   <button
                     onClick={UpdatedAddress}
-                    type="submit"
+                    type="button"
                     className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
+                    disabled={Loading}
                   >
                     {Loading ? (
                       <>
@@ -1756,8 +1895,8 @@ const Bookingform = () => {
           </div>
         </div>
       </div>
-      {/* /Edit Dependent Modal*/}
-      {/* Delete */}
+
+      {/* Delete Member Modal */}
       <div className="modal fade custom-modals" id="delete_modal">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1782,9 +1921,20 @@ const Bookingform = () => {
                     onClick={Deletedmember}
                     type="button"
                     className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
+                    disabled={Loading}
                   >
-                    Yes Delete
+                    {Loading ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Deleting...
+                      </>
+                    ) : (
+                      "Yes Delete"
+                    )}
                   </button>
                 </div>
               </div>
@@ -1793,6 +1943,7 @@ const Bookingform = () => {
         </div>
       </div>
 
+      {/* Delete Address Modal */}
       <div className="modal fade custom-modals" id="delete_modall">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -1817,7 +1968,7 @@ const Bookingform = () => {
                     onClick={DeletedAddress}
                     type="button"
                     className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
+                    disabled={Loading}
                   >
                     {Loading ? (
                       <>

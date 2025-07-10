@@ -17,6 +17,7 @@ const Login = () => {
   const [resendDisabled, setResendDisabled] = useState(true);
   const [timer, setTimer] = useState(30);
   const mendicityUser = secureLocalStorage.getItem("medicityuser");
+  const [isSubmit , setIsSubmit] = useState(false);
 
   useEffect(() => {
     if (mendicityUser) {
@@ -43,6 +44,7 @@ const Login = () => {
     return () => clearInterval(countdown);
   }, [resendDisabled, showOTP]);
   const handleSignUpClick = async (e) => {
+    setIsSubmit(true);
     e.preventDefault();
     setError("");
 
@@ -56,7 +58,7 @@ const Login = () => {
     }
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/userLogin",
+        `${process.env.REACT_APP_API_KEY}userLogin`,
         { phone }
       );
 
@@ -66,11 +68,13 @@ const Login = () => {
         setResendDisabled(true);
         setTimer(30);
         toast.success(response.data.message);
+        setIsSubmit(false);
       } else {
         toast.error("Login failed. Please try again.");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "An error occurred.");
+      setIsSubmit(false);
     }
   };
 
@@ -84,7 +88,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/userVerify",
+        `${process.env.REACT_APP_API_KEY}userVerify`,
         { phone, otp }
       );
 
@@ -113,7 +117,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/resendOtp",
+        `${process.env.REACT_APP_API_KEY}resendOtp`,
         { phone }
       );
 
@@ -146,7 +150,7 @@ const Login = () => {
                 <div className="col-md-12 col-lg-6 login-right">
                   <div className="login-header">
                     <h1>
-                      Login <span>Medicity</span>
+                      Login <span>Klar</span>
                     </h1>
                   </div>
                   <div>
@@ -238,7 +242,7 @@ const Login = () => {
                       <span className="span-or">or</span>
                     </div>
                     <div className="social-login-btn">
-                      <a href="javascript:void(0);" className="btn w-100">
+                      <a  className="btn w-100">
                         <img
                           src="assets/img/icons/google-icon.svg"
                           alt="google-icon"

@@ -7,6 +7,7 @@ import Slider from "react-slick";
 import { DNA } from "react-loader-spinner";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Swal from "sweetalert2";
 
 const Tophealthpackages = () => {
   const Navigate = useNavigate();
@@ -36,8 +37,18 @@ const Tophealthpackages = () => {
 
   const handleSubmit = (id) => {
     if (!userId) {
-      toast.error("Please Login First");
-
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to add items to your cart",
+        confirmButtonText: "Go to Login",
+        showCancelButton: true,
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Navigate("/login");
+        }
+      });
       return;
     }
     const formData = {
@@ -48,11 +59,11 @@ const Tophealthpackages = () => {
     axios
       .post(`${process.env.REACT_APP_API_KEY}addToCart`, formData)
       .then((res) => {
-        Tophealthpackages();
+        console.log(res?.data?.message);
         toast.success(res?.data?.message);
       })
       .catch((error) => {
-        toast.error(error.response.data.message);
+        toast.error(error?.response?.data?.message);
       });
   };
 
@@ -189,23 +200,29 @@ const Tophealthpackages = () => {
                             </Link>
                           </h3>
 
-                          {data.test ? (
-                            data.test.slice(0, 4).map((item, index) => (
-                              <span
-                                key={index}
-                                className="badge bg-light text-dark me-2 mb-2"
-                                style={{
-                                  fontSize: "0.85rem",
-                                  padding: "6px 12px",
-                                  borderRadius: "20px",
-                                }}
-                              >
-                                {item}
-                              </span>
-                            ))
-                          ) : (
-                            <h6 className="text-light mb-2">{data?.badges}</h6>
-                          )}
+                          {Array.isArray(data?.test) && data.test.length > 0 ? (
+  data.test.slice(0, 4).map((item, index) => (
+    <span
+      key={index}
+      className="badge bg-light text-dark me-2 mb-2"
+      style={{
+        fontSize: "0.85rem",
+        padding: "6px 12px",
+        borderRadius: "20px",
+        maxWidth: "110px", // Add max width
+        whiteSpace: "nowrap", // Prevent wrapping
+        overflow: "hidden", // Hide overflow
+        textOverflow: "ellipsis", // Add ellipsis
+        display: "inline-block" // Ensure the span respects width
+      }}
+    >
+      {item?.test_name || "Unnamed Test"}
+    </span>
+  ))
+) : (
+  <h6 className="text-light mb-2">{data?.badges || "No tests"}</h6>
+)}
+
                         </div>
                         <div className="d-flex align-items-center justify-content-between">
                           <div>

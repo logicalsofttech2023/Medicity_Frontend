@@ -146,7 +146,7 @@ const GetUser = async () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td><a className="link-primary" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#med-detail">#MD1236</a></td>
+                          <td><a className="link-primary"  data-bs-toggle="modal" data-bs-target="#med-detail">#MD1236</a></td>
                           <td>
                             <h2 className="table-avatar">
                               <a href="patient-profile.html" className="avatar avatar-sm me-2">
@@ -162,13 +162,13 @@ const GetUser = async () => {
                           <td>22 Mar 2024</td>
                           <td>
                             <div className="action-item">
-                              <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#med-detail">
+                              <a  data-bs-toggle="modal" data-bs-target="#med-detail">
                                 <i className="isax isax-link-2" />
                               </a>
-                              <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#edit-med-record">
+                              <a  data-bs-toggle="modal" data-bs-target="#edit-med-record">
                                 <i className="isax isax-edit-2" />
                               </a>
-                              <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete_modal">
+                              <a  data-bs-toggle="modal" data-bs-target="#delete_modal">
                                 <i className="isax isax-trash" />
                               </a>
                             </div>

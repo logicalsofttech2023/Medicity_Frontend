@@ -4,6 +4,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { DNA } from "react-loader-spinner";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
+import Swal from 'sweetalert2';
+
 
 const Doctorscurateddetails = () => {
   const Navigate = useNavigate();
@@ -148,25 +150,49 @@ const Doctorscurateddetails = () => {
   let userId = secureLocalStorage.getItem("medicityuser");
 
   const handleSubmit = (id) => {
-    if (!userId) {
-      toast.error("Please Login First");
-      return;
-    }
-    const formData = {
-      userId: userId,
-      packageId: id,
-    };
+  if (!userId) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Login Required',
+      text: 'Please login to add items to your cart',
+      confirmButtonText: 'Go to Login',
+      showCancelButton: true,
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Navigate('/login');
+      }
+    });
+    return;
+  }
 
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}addToCart`, formData)
-      .then((res) => {
-        GetpackageList();
-        toast.success(res?.data?.message);
-      })
-      .catch((error) => {
-        toast.error(error.response.data.message);
-      });
+  const formData = {
+    userId: userId,
+    packageId: id,
   };
+
+  axios
+    .post(`${process.env.REACT_APP_API_KEY}addToCart`, formData)
+    .then((res) => {
+      GetpackageList();
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: res?.data?.message,
+        timer: 2000,
+        showConfirmButton: false
+      });
+    })
+    .catch((error) => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response.data.message || 'Something went wrong',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    });
+};
 
   const colors = [
     "linear-gradient(135deg, rgb(245, 166, 35), rgb(247, 107, 28))",
@@ -225,7 +251,7 @@ const Doctorscurateddetails = () => {
                   </div>
                   <div className="card-body">
                     {/* Price Range Filter */}
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                       <h6 className="mb-3">Price Range</h6>
                       <div className="d-flex justify-content-between mb-2">
                         <span>₹{filters.priceRange[0]}</span>
@@ -249,7 +275,7 @@ const Doctorscurateddetails = () => {
                         value={filters.priceRange[1]}
                         onChange={(e) => handlePriceChange(e, 1)}
                       />
-                    </div>
+                    </div> */}
 
                     {/* Package Category Filter */}
                     <div className="mb-4">
@@ -448,7 +474,7 @@ const Doctorscurateddetails = () => {
                                   </div>
 
                                   {/* Tags */}
-                                  <div
+                                  {/* <div
                                     onClick={() =>
                                       Navigate(
                                         `/Healthcheckuppackagedetails/${packageData?._id}`
@@ -476,7 +502,35 @@ const Doctorscurateddetails = () => {
                                         {packageData?.badges}
                                       </h6>
                                     )}
-                                  </div>
+                                  </div> */}
+
+                                  <div className="my-0 d-flex flex-wrap">
+  {Array.isArray(packageData?.test) && packageData.test.length > 0 ? (
+    packageData.test.map((testItem, i) => (
+      <span
+        key={i}
+        className="badge bg-light text-dark me-2 mb-2"
+        style={{
+          fontSize: "0.85rem",
+          padding: "6px 12px",
+          borderRadius: "20px",
+          maxWidth: "120px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+        title={testItem?.test_name || "Unnamed Test"} // tooltip
+      >
+        {testItem?.test_name || "Unnamed Test"}
+      </span>
+    ))
+  ) : (
+    <h6 className="text-light mb-2">
+      {packageData?.badges || "No tests available"}
+    </h6>
+  )}
+</div>
+
 
                                   <div
                                     onClick={() =>
@@ -536,92 +590,146 @@ const Doctorscurateddetails = () => {
                 )}
               </div>
               {filteredList.length > itemsPerPage && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginTop: "24px",
-                    marginBottom: "40px",
-                  }}
-                >
-                  <button
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      backgroundColor: "#f8fafc",
-                      color: "#334155",
-                      border: "1px solid #e2e8f0",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      opacity: currentPage === 1 ? 0.5 : 1,
-                    }}
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  >
-                    <i
-                      className="isax isax-arrow-left-1"
-                      style={{ fontSize: "16px" }}
-                    />
-                    Previous
-                  </button>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "8px",
+      marginTop: "24px",
+      marginBottom: "40px",
+      flexWrap: "wrap"
+    }}
+  >
+    <button
+      style={{
+        padding: "8px 16px",
+        borderRadius: "8px",
+        backgroundColor: "#f8fafc",
+        color: "#334155",
+        border: "1px solid #e2e8f0",
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        opacity: currentPage === 1 ? 0.5 : 1,
+      }}
+      disabled={currentPage === 1}
+      onClick={() => handlePageChange(currentPage - 1)}
+    >
+      <i
+        className="isax isax-arrow-left-1"
+        style={{ fontSize: "16px" }}
+      />
+      Previous
+    </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          backgroundColor:
-                            page === currentPage ? "#2a7de1" : "#f8fafc",
-                          color: page === currentPage ? "white" : "#334155",
-                          border: `1px solid ${
-                            page === currentPage ? "#2a7de1" : "#e2e8f0"
-                          }`,
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
+    {/* Always show first page */}
+    <button
+      key={1}
+      style={{
+        padding: "8px 16px",
+        borderRadius: "8px",
+        backgroundColor: 1 === currentPage ? "#2a7de1" : "#f8fafc",
+        color: 1 === currentPage ? "white" : "#334155",
+        border: `1px solid ${1 === currentPage ? "#2a7de1" : "#e2e8f0"}`,
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: "pointer",
+      }}
+      onClick={() => handlePageChange(1)}
+    >
+      1
+    </button>
 
-                  <button
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      backgroundColor: "#f8fafc",
-                      color: "#334155",
-                      border: "1px solid #e2e8f0",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      cursor:
-                        currentPage === totalPages ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      opacity: currentPage === totalPages ? 0.5 : 1,
-                    }}
-                    disabled={currentPage === totalPages}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  >
-                    Next
-                    <i
-                      className="isax isax-arrow-right-1"
-                      style={{ fontSize: "16px" }}
-                    />
-                  </button>
-                </div>
-              )}
+    {/* Show ellipsis if current page is far from start */}
+    {currentPage > 3 && (
+      <span style={{ padding: "0 8px" }}>...</span>
+    )}
+
+    {/* Show pages around current page */}
+    {Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter(
+        page => 
+          page === currentPage - 1 || 
+          page === currentPage || 
+          page === currentPage + 1 ||
+          (currentPage === 1 && page === 2) ||
+          (currentPage === totalPages && page === totalPages - 1)
+      )
+      .filter(page => page > 1 && page < totalPages)
+      .map((page) => (
+        <button
+          key={page}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "8px",
+            backgroundColor: page === currentPage ? "#2a7de1" : "#f8fafc",
+            color: page === currentPage ? "white" : "#334155",
+            border: `1px solid ${page === currentPage ? "#2a7de1" : "#e2e8f0"}`,
+            fontSize: "14px",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+          onClick={() => handlePageChange(page)}
+        >
+          {page}
+        </button>
+      ))}
+
+    {/* Show ellipsis if current page is far from end */}
+    {currentPage < totalPages - 2 && (
+      <span style={{ padding: "0 8px" }}>...</span>
+    )}
+
+    {/* Always show last page if there's more than 1 page */}
+    {totalPages > 1 && (
+      <button
+        key={totalPages}
+        style={{
+          padding: "8px 16px",
+          borderRadius: "8px",
+          backgroundColor: totalPages === currentPage ? "#2a7de1" : "#f8fafc",
+          color: totalPages === currentPage ? "white" : "#334155",
+          border: `1px solid ${totalPages === currentPage ? "#2a7de1" : "#e2e8f0"}`,
+          fontSize: "14px",
+          fontWeight: "600",
+          cursor: "pointer",
+        }}
+        onClick={() => handlePageChange(totalPages)}
+      >
+        {totalPages}
+      </button>
+    )}
+
+    <button
+      style={{
+        padding: "8px 16px",
+        borderRadius: "8px",
+        backgroundColor: "#f8fafc",
+        color: "#334155",
+        border: "1px solid #e2e8f0",
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        opacity: currentPage === totalPages ? 0.5 : 1,
+      }}
+      disabled={currentPage === totalPages}
+      onClick={() => handlePageChange(currentPage + 1)}
+    >
+      Next
+      <i
+        className="isax isax-arrow-right-1"
+        style={{ fontSize: "16px" }}
+      />
+    </button>
+  </div>
+)}
             </div>
           </div>
         </div>

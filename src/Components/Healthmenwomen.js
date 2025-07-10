@@ -1,10 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
+import Swal from "sweetalert2";
 
 const Healthmenwomen = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { minAge, maxAge, gender } = location.state || {};
   const [CategoryresDetailsList, setCategoryresDetailsList] = useState();
@@ -35,8 +37,18 @@ const Healthmenwomen = () => {
 
   const handleSubmit = (id) => {
     if (!userId) {
-      toast.error("Please Login First");
-
+      Swal.fire({
+        icon: "error",
+        title: "Login Required",
+        text: "Please login to add items to your cart",
+        confirmButtonText: "Go to Login",
+        showCancelButton: true,
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
       return;
     }
     const formData = {
@@ -145,22 +157,31 @@ const Healthmenwomen = () => {
                           </div>
 
                           <div className="card-body p-0">
-                            <div className="d-flex flex-wrap active-bar gap-3 p-3">
-                              {data?.test ? (
-                                data?.test.map((data) => {
-                                  return (
-                                    <span className="badge badge-secondary-transparents">
-                                      {data}
-                                    </span>
-                                  );
-                                })
-                              ) : (
-                                <h6 className=" text-light mb-2 flexwrap-wrap">
-                                  {data?.badges}
-                                </h6>
-                              )}
-                            </div>
-                          </div>
+  <div className="d-flex flex-wrap active-bar gap-3 p-3">
+    {Array.isArray(data?.test) && data.test.length > 0 ? (
+      data.test.map((testItem, index) => (
+        <span
+          key={index}
+          className="badge badge-secondary-transparents"
+          style={{
+            maxWidth: '150px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={typeof testItem === 'string' ? testItem : testItem?.test_name}
+        >
+          {typeof testItem === 'string' ? testItem : testItem?.test_name || 'Unnamed Test'}
+        </span>
+      ))
+    ) : (
+      <h6 className="text-light mb-2 flexwrap-wrap">
+        {data?.badges || 'No tests'}
+      </h6>
+    )}
+  </div>
+</div>
+
 
                           <div
                             style={{
@@ -574,7 +595,6 @@ const Healthmenwomen = () => {
                         <div className="accordion-item">
                           <h2 className="accordion-header" id="headingOne">
                             <a
-                              href="javascript:void(0);"
                               className="accordion-button collapsed"
                               data-bs-toggle="collapse"
                               data-bs-target="#collapseOne"
@@ -608,7 +628,6 @@ const Healthmenwomen = () => {
                         <div className="accordion-item">
                           <h2 className="accordion-header" id="headingTwo">
                             <a
-                              href="javascript:void(0);"
                               className="accordion-button collapsed"
                               data-bs-toggle="collapse"
                               data-bs-target="#collapseTwo"
@@ -641,7 +660,6 @@ const Healthmenwomen = () => {
                         <div className="accordion-item">
                           <h2 className="accordion-header" id="headingThree">
                             <a
-                              href="javascript:void(0);"
                               className="accordion-button collapsed"
                               data-bs-toggle="collapse"
                               data-bs-target="#collapseThree"
@@ -675,7 +693,6 @@ const Healthmenwomen = () => {
                         <div className="accordion-item">
                           <h2 className="accordion-header" id="headingFour">
                             <a
-                              href="javascript:void(0);"
                               className="accordion-button collapsed"
                               data-bs-toggle="collapse"
                               data-bs-target="#collapseFour"
@@ -709,7 +726,6 @@ const Healthmenwomen = () => {
                         <div className="accordion-item">
                           <h2 className="accordion-header" id="headingFive">
                             <a
-                              href="javascript:void(0);"
                               className="accordion-button collapsed"
                               data-bs-toggle="collapse"
                               data-bs-target="#collapseFive"

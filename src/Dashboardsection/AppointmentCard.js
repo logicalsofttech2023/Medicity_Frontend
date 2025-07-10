@@ -17,7 +17,7 @@ const AppointmentCard = ({ data }) => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/admin/bookingOrderStatusChange",
+        "https://admin.klardaignostics.com/api/admin/bookingOrderStatusChange",
         {
           orderId,
           status: 2,

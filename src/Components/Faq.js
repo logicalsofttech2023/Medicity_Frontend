@@ -9,7 +9,7 @@ const Faq = () => {
   const fetchFaqs = async () => {
     try {
       const res = await axios.get(
-        "http://157.66.191.24:3088/api/admin/faqList"
+        "https://admin.klardaignostics.com/api/admin/faqList"
       );
       if (res?.data?.result) {
         setFaqList(res.data.data);

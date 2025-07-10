@@ -57905,7 +57905,7 @@ ul li {
 .list-section {
   position: relative;
   margin-top: -40px;
-  z-index: 9;
+  z-index: 1;
 }
 
 .list-card .card-body {
@@ -60254,7 +60254,7 @@ ul li {
 .custom-arrow {
   position: absolute;
   top: 0;
-  z-index: 2;
+  z-index: 1;
   background: #fff;
   border: 1px solid #ddd;
   padding: 6px 10px;

@@ -235,30 +235,30 @@ function Layout() {
 
         <Route
           path="/privacyPolicy"
-          element={<Protect ComponentName={PrivacyPolicy} />}
+          element={<PrivacyPolicy  />}
         ></Route>
 
         <Route
           path="/refundPolicy"
-          element={<Protect ComponentName={RefundPolicy} />}
+          element={<RefundPolicy />}
         ></Route>
 
         <Route
           path="/legalNotice"
-          element={<Protect ComponentName={LegalNotice} />}
+          element={<LegalNotice />}
         ></Route>
 
         <Route
           path="/aboutUs"
-          element={<Protect ComponentName={AboutUs} />}
+          element={<aboutUs />}
         ></Route>
 
         <Route
           path="/contactUs"
-          element={<Protect ComponentName={ContactUs} />}
+          element={<ContactUs />}
         ></Route>
 
-        <Route path="/faqs" element={<Protect ComponentName={Faqs} />}></Route>
+        <Route path="/faqs" element={<Faqs />}></Route>
 
         <Route
           path="/membership"

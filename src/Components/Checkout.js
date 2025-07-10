@@ -54,7 +54,6 @@ const Checkout = () => {
       .catch((error) => {
         toast.error(error.response.data.message);
         console.log(error);
-        
       });
   };
 
@@ -319,34 +318,85 @@ const Checkout = () => {
                       <div>
                         <div className="pt-3 border-top booking-more-info">
                           <h6 className="mb-3">Payment Info</h6>
+
+                          {/* Total Amount (Before Discount) */}
                           <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                             <p className="mb-0">Total Amount</p>
-                            <span className="fw-medium d-block">₹200</span>
+                            <span className="fw-medium d-block">
+                              ₹
+                              {cartdata
+                                ?.reduce((total, item) => {
+                                  const price = item?.packageId?.price || 0;
+                                  return total + price;
+                                }, 0)
+                                .toFixed(2)}
+                            </span>
                           </div>
+
+                          {/* Diagnostic Fee */}
                           <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                             <p className="mb-0">Diagnostic Fee</p>
-                            <span className="fw-medium d-block">₹20</span>
+                            <span className="fw-medium d-block">₹223</span>
                           </div>
+
+                          {/* Tax */}
                           <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                             <p className="mb-0">Tax</p>
                             <span className="fw-medium d-block">₹18</span>
                           </div>
+
+                          {/* Discount */}
                           <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                             <p className="mb-0">Discount</p>
                             <span className="fw-medium text-danger d-block">
-                              -₹15
+                              -₹
+                              {cartdata
+                                ?.reduce((total, item) => {
+                                  const price = item?.packageId?.price || 0;
+                                  const discountPerc =
+                                    item?.packageId?.offer?.[0]
+                                      ?.disc_percantage || 0;
+                                  const discountAmount =
+                                    (price * discountPerc) / 100;
+                                  return total + discountAmount;
+                                }, 0)
+                                .toFixed(2)}
                             </span>
                           </div>
                         </div>
+
+                        {/* Final Total (after discount + diagnostic + tax) */}
                         <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
                           <h6 className="text-white">Total</h6>
                           <h6 className="text-white">
                             ₹
-                            {cartdata?.reduce(
-                              (total, item) =>
-                                total + (item?.packageId?.price || 0),
-                              0
-                            ) + 223}{" "}
+                            {(() => {
+                              const diagnostic = 223;
+                              const tax = 18;
+
+                              let originalTotal = 0;
+                              let totalDiscount = 0;
+
+                              cartdata?.forEach((item) => {
+                                const price = item?.packageId?.price || 0;
+                                const discountPerc =
+                                  item?.packageId?.offer?.[0]
+                                    ?.disc_percantage || 0;
+                                const discountAmount =
+                                  (price * discountPerc) / 100;
+
+                                originalTotal += price;
+                                totalDiscount += discountAmount;
+                              });
+
+                              const finalTotal =
+                                originalTotal -
+                                totalDiscount +
+                                diagnostic +
+                                tax;
+
+                              return finalTotal.toFixed(2);
+                            })()}
                           </h6>
                         </div>
                       </div>

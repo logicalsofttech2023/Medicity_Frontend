@@ -58,7 +58,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/userLogin",
+        `${process.env.REACT_APP_API_KEY}userLogin`,
         { phone }
       );
 
@@ -86,7 +86,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/userVerify",
+        `${process.env.REACT_APP_API_KEY}userVerify`,
         { phone, otp }
       );
 
@@ -113,7 +113,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        "http://157.66.191.24:3088/api/user/resendOtp",
+        `${process.env.REACT_APP_API_KEY}resendOtp`,
         { phone }
       );
 
@@ -238,7 +238,7 @@ const Register = () => {
                       <span className="span-or">or</span>
                     </div>
                     <div className="social-login-btn">
-                      <a href="javascript:void(0);" className="btn w-100">
+                      <a  className="btn w-100">
                         <img
                           src="assets/img/icons/google-icon.svg"
                           alt="google-icon"

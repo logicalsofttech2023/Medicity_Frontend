@@ -145,7 +145,7 @@ const GetUser = async () => {
                         <tbody>
                           <tr>
                             <td>
-                              <a href="javascript:void(0);" className="link-primary">#AC1234</a>
+                              <a  className="link-primary">#AC1234</a>
                             </td>
                             <td className="text-gray-9">5396 5250 1908 XXXX</td>
                             <td>Appointment</td>
@@ -157,7 +157,7 @@ const GetUser = async () => {
                           </tr>
                           <tr>
                             <td>
-                              <a href="javascript:void(0);" className="link-primary">#AC3656</a>
+                              <a  className="link-primary">#AC3656</a>
                             </td>
                             <td className="text-gray-9">6372 4902 4902 XXXX</td>
                             <td>Appointment</td>
@@ -169,7 +169,7 @@ const GetUser = async () => {
                           </tr>
                           <tr>
                             <td>
-                              <a href="javascript:void(0);" className="link-primary">#AC1246</a>
+                              <a  className="link-primary">#AC1246</a>
                             </td>
                             <td className="text-gray-9">4892 0204 4924 XXXX</td>
                             <td>Appointment</td>
@@ -181,7 +181,7 @@ const GetUser = async () => {
                           </tr>
                           <tr>
                             <td>
-                              <a href="javascript:void(0);" className="link-primary">#AC6985</a>
+                              <a  className="link-primary">#AC6985</a>
                             </td>
                             <td className="text-gray-9">5730 4892 0492 XXXX</td>
                             <td>Refund</td>
@@ -193,7 +193,7 @@ const GetUser = async () => {
                           </tr>
                           <tr>
                             <td>
-                              <a href="javascript:void(0);" className="link-primary">#AC3659</a>
+                              <a  className="link-primary">#AC3659</a>
                             </td>
                             <td className="text-gray-9">7922 9024 5824 XXXX</td>
                             <td>Appointment</td>

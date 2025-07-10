@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Doctorscurated from "./Doctorscurated";
 import Tophealthpackages from "./Tophealthpackages";
 import Featuredfamilycarepackage from "./Featuredfamilycarepackage";
@@ -8,14 +8,70 @@ import RecentView from "./RecentView";
 import { Link } from "react-router-dom";
 import Faq from "./Faq";
 import Blog from "./Blog";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { useNavigate } from "react-router-dom";
+import secureLocalStorage from "react-secure-storage";
+import Swal from "sweetalert2";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const sliderRef = useRef();
 
- 
+  let userId = secureLocalStorage.getItem("medicityuser");
 
-  
+  const handleClick = (path) => {
+    if (!userId) {
+      Swal.fire({
+        icon: "warning",
+        title: "Login Required",
+        text: "Please login first to proceed!",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      return;
+    }
+
+    navigate(`/${path}`);
+  };
+
+  const handlePrev = () => sliderRef.current?.slickPrev();
+  const handleNext = () => sliderRef.current?.slickNext();
+
+  useEffect(() => {
+    AOS.init({ duration: 1000 });
+  }, []);
+
+  const settings = {
+    dots: false,
+    arrows: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1200,
+        settings: { slidesToShow: 6 },
+      },
+      {
+        breakpoint: 768,
+        settings: { slidesToShow: 4 },
+      },
+      {
+        breakpoint: 576,
+        settings: { slidesToShow: 2 },
+      },
+    ],
+  };
+
   return (
     <div className="main-wrapper">
       {/* Top Header */}
@@ -27,45 +83,9 @@ const Home = () => {
           <div className="row align-items-center">
             <div className="col-lg-7">
               <div className="banner-content aos" data-aos="fade-up">
-                <div className="rating-appointment d-inline-flex align-items-center gap-2">
-                  <div className="avatar-list-stacked avatar-group-lg">
-                    <span className="avatar avatar-rounded">
-                      <img
-                        className="border border-white"
-                        src="assets/img/doctors/doctor-thumb-22.jpg"
-                        alt="img"
-                      />
-                    </span>
-                    <span className="avatar avatar-rounded">
-                      <img
-                        className="border border-white"
-                        src="assets/img/doctors/doctor-thumb-23.jpg"
-                        alt="img"
-                      />
-                    </span>
-                    <span className="avatar avatar-rounded">
-                      <img
-                        src="assets/img/doctors/doctor-thumb-24.jpg"
-                        alt="img"
-                      />
-                    </span>
-                  </div>
-                  <div className="me-2">
-                    <h6 className="mb-1">5K+ Appointments</h6>
-                    <div className="d-flex align-items-center">
-                      <div className="d-flex align-items-center">
-                        <i className="fa-solid fa-star text-orange me-1" />
-                        <i className="fa-solid fa-star text-orange me-1" />
-                        <i className="fa-solid fa-star text-orange me-1" />
-                        <i className="fa-solid fa-star text-orange me-1" />
-                        <i className="fa-solid fa-star text-orange me-1" />
-                      </div>
-                      <p>5.0 Ratings</p>
-                    </div>
-                  </div>
-                </div>
+                
                 <h1 className="display-5">
-                  Blood Test at Home with Medicity
+                  Blood Test at Home with Klar
                   <span className="banner-icon">
                     <img src="assets/img/icons/video.svg" alt="img" />
                   </span>{" "}
@@ -87,7 +107,7 @@ const Home = () => {
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="Search doctors, clinics, hospitals, etc"
+                          placeholder="Search for lab test"
                         />
                       </div>
                     </div>
@@ -173,86 +193,141 @@ const Home = () => {
       </section>
       {/* /Home Banner */}
       {/* List */}
-      <div className="list-section">
+      <div className="list-section" style={{ position: "relative" }}>
         <div className="container">
           <div className="list-card card mb-0">
-            <div className="card-body">
-              <div className="d-flex align-items-center justify-content-center justify-content-xl-between flex-wrap gap-4 list-wraps">
-                <Link
-                  to="/Booking"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-secondary">
-                    <img src="assets/img/icons/list-icon-01.svg" alt="img" />
-                  </div>
-                  <h6>Book Appointment</h6>
-                </Link>
-                <Link
-                  to="/Bookingappoinment"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-primary">
-                    <img src="assets/img/icons/list-icon-02.svg" alt="img" />
-                  </div>
-                  <h6>Booking</h6>
-                </Link>
-                <Link
-                  to="/Reports"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-pink">
-                    <img src="assets/img/icons/list-icon-03.svg" alt="img" />
-                  </div>
-                  <h6>Reports</h6>
-                </Link>
-                <Link
-                  to="/Vitals"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-cyan">
-                    <img src="assets/img/icons/list-icon-04.svg" alt="img" />
-                  </div>
-                  <h6>Vitals</h6>
-                </Link>
-                <a
-                  href="#"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-purple">
-                    <img src="assets/img/icons/list-icon-05.svg" alt="img" />
-                  </div>
-                  <h6>Quality</h6>
-                </a>
-                <a
-                  href="#"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-orange">
-                    <img src="assets/img/icons/list-icon-06.svg" alt="img" />
-                  </div>
-                  <h6>On-Time Services</h6>
-                </a>
-                <a
-                  href="#"
-                  className="list-item aos"
-                  data-aos="fade-up"
-                >
-                  <div className="list-icon bg-teal">
-                    <img src="assets/img/icons/list-icon-07.svg" alt="img" />
-                  </div>
-                  <h6>Availability</h6>
-                </a>
-              </div>
+            <div className="card-body" style={{ position: "relative" }}>
+              {/* Left arrow button */}
+              <button
+                className="btn btn-outline-primary"
+                onClick={handlePrev}
+                style={{
+                  position: "absolute",
+                  left: "-10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 1,
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
+                }}
+              >
+                ‹
+              </button>
+
+              <Slider {...settings} ref={sliderRef} className="list-wraps">
+                <div className="list-item aos" data-aos="fade-up">
+                  <Link to="/Booking">
+                    <div className="list-icon bg-secondary">
+                      <img src="assets/img/icons/list-icon-01.svg" alt="img" />
+                    </div>
+                    <h6>Book Appointment</h6>
+                  </Link>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("Bookingappoinment")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-primary">
+                      <img src="assets/img/icons/list-icon-02.svg" alt="img" />
+                    </div>
+                    <h6>Booking</h6>
+                  </button>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("Reports")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-pink">
+                      <img src="assets/img/icons/list-icon-03.svg" alt="img" />
+                    </div>
+                    <h6>Reports</h6>
+                  </button>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("Vitals")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-cyan">
+                      <img src="assets/img/icons/list-icon-04.svg" alt="img" />
+                    </div>
+                    <h6>Vitals</h6>
+                  </button>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("Descriptions")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-purple">
+                      <img src="assets/img/icons/list-icon-05.svg" alt="img" />
+                    </div>
+                    <h6>Quality</h6>
+                  </button>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("OnTimeServices")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-orange">
+                      <img src="assets/img/icons/list-icon-06.svg" alt="img" />
+                    </div>
+                    <h6>On-Time Services</h6>
+                  </button>
+                </div>
+
+                <div className="list-item aos" data-aos="fade-up">
+                  <button
+                    onClick={() => handleClick("Availability")}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <div className="list-icon bg-teal">
+                      <img src="assets/img/icons/list-icon-07.svg" alt="img" />
+                    </div>
+                    <h6>Availability</h6>
+                  </button>
+                </div>
+              </Slider>
+
+              {/* Right arrow button */}
+              <button
+                className="btn btn-outline-primary"
+                onClick={handleNext}
+                style={{
+                  position: "absolute",
+                  right: "-10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 1,
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
+                }}
+              >
+                ›
+              </button>
             </div>
           </div>
         </div>
       </div>
+
       {/* /List */}
       {/* Categories Section */}
       <section className="section categorie-section">
@@ -300,14 +375,17 @@ const Home = () => {
                   <p>Offer Prices in all medecines</p>
                 </div>
                 <div className="categorie-btn">
-                  <Link to="/Descriptions" className="btn">
+                  <button
+                    className="btn"
+                    onClick={() => handleClick("Descriptions")}
+                  >
                     Upload Now
                     <img
                       src="assets/img/icons/uploadsvg.svg"
                       alt="Order Icon"
                       style={{ height: "20px" }}
                     />
-                  </Link>
+                  </button>
                 </div>
                 <div className="categorie-shapes">
                   <div className="categorie-shape-top">
@@ -329,7 +407,6 @@ const Home = () => {
       {/* Doctor Section */}
       <Tophealthpackages />
 
-      
       {/* /Doctor Section */}
       {/* Benifit Section */}
       <section className="benifit-section">
@@ -414,39 +491,37 @@ const Home = () => {
           <div className="slide-list d-flex gap-4">
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">
-                  Multi Speciality Treatments &amp; Doctors
-                </a>
+                <a>Multi Speciality Treatments &amp; Doctors</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Lab Testing Services</a>
+                <a>Lab Testing Services</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Medecines &amp; Supplies</a>
+                <a>Medecines &amp; Supplies</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Hospitals &amp; Clinics</a>
+                <a>Hospitals &amp; Clinics</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Health Care Services</a>
+                <a>Health Care Services</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Talk to Doctors</a>
+                <a>Talk to Doctors</a>
               </h6>
             </div>
             <div className="services-slide">
               <h6>
-                <a href="javascript:void(0);">Home Care Services</a>
+                <a>Home Care Services</a>
               </h6>
             </div>
           </div>
@@ -508,7 +583,6 @@ const Home = () => {
                   <div className="accordion-item">
                     <h2 className="accordion-header" id="headingOne">
                       <a
-                        href="javascript:void(0);"
                         className="accordion-button"
                         data-bs-toggle="collapse"
                         data-bs-target="#collapseOne"
@@ -540,7 +614,6 @@ const Home = () => {
                   <div className="accordion-item">
                     <h2 className="accordion-header" id="headingTwo">
                       <a
-                        href="javascript:void(0);"
                         className="accordion-button collapsed"
                         data-bs-toggle="collapse"
                         data-bs-target="#collapseTwo"
@@ -596,10 +669,10 @@ const Home = () => {
                     <i className="isax isax-security-user5" />
                   </div>
                   <div className="book-info">
-                    <h6 className="text-white mb-2">Check  Profile</h6>
+                    <h6 className="text-white mb-2">Check Profile</h6>
                     <p className="fs-14 text-light">
-                      Explore detailed profiles on our platform to make
-                      informed healthcare decisions.
+                      Explore detailed profiles on our platform to make informed
+                      healthcare decisions.
                     </p>
                   </div>
                   <div className="way-icon">
@@ -856,7 +929,7 @@ const Home = () => {
                   clearly.
                 </p>
                 <div className="d-flex align-items-center">
-                  <a href="javascript:void(0);" className="avatar avatar-lg">
+                  <a  className="avatar avatar-lg">
                     <img
                       src="assets/img/patients/patient22.jpg"
                       className="rounded-circle"
@@ -865,7 +938,7 @@ const Home = () => {
                   </a>
                   <div className="ms-2">
                     <h6 className="mb-1">
-                      <a href="javascript:void(0);">Deny Hendrawan</a>
+                      <a >Deny Hendrawan</a>
                     </h6>
                     <p className="fs-14 mb-0">United States</p>
                   </div>
@@ -892,7 +965,7 @@ const Home = () => {
                   condition and worked with me to create a plan.
                 </p>
                 <div className="d-flex align-items-center">
-                  <a href="javascript:void(0);" className="avatar avatar-lg">
+                  <a  className="avatar avatar-lg">
                     <img
                       src="assets/img/patients/patient21.jpg"
                       className="rounded-circle"
@@ -901,7 +974,7 @@ const Home = () => {
                   </a>
                   <div className="ms-2">
                     <h6 className="mb-1">
-                      <a href="javascript:void(0);">Johnson DWayne</a>
+                      <a >Johnson DWayne</a>
                     </h6>
                     <p className="fs-14 mb-0">United States</p>
                   </div>
@@ -928,7 +1001,7 @@ const Home = () => {
                   professional but also made me feel comfortable discussing.
                 </p>
                 <div className="d-flex align-items-center">
-                  <a href="javascript:void(0);" className="avatar avatar-lg">
+                  <a  className="avatar avatar-lg">
                     <img
                       src="assets/img/patients/patient.jpg"
                       className="rounded-circle"
@@ -937,7 +1010,7 @@ const Home = () => {
                   </a>
                   <div className="ms-2">
                     <h6 className="mb-1">
-                      <a href="javascript:void(0);">Rayan Smith</a>
+                      <a >Rayan Smith</a>
                     </h6>
                     <p className="fs-14 mb-0">United States</p>
                   </div>
@@ -965,7 +1038,7 @@ const Home = () => {
                   clearly.
                 </p>
                 <div className="d-flex align-items-center">
-                  <a href="javascript:void(0);" className="avatar avatar-lg">
+                  <a  className="avatar avatar-lg">
                     <img
                       src="assets/img/patients/patient23.jpg"
                       className="rounded-circle"
@@ -974,7 +1047,7 @@ const Home = () => {
                   </a>
                   <div className="ms-2">
                     <h6 className="mb-1">
-                      <a href="javascript:void(0);">Sofia Doe</a>
+                      <a >Sofia Doe</a>
                     </h6>
                     <p className="fs-14 mb-0">United States</p>
                   </div>
