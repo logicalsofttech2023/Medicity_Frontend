@@ -28,6 +28,23 @@ const Familymember = () => {
 
   const AddMember = (e) => {
     e.preventDefault();
+
+    // Validation
+    if (!fullName || !relationName || !age || !phone || !email || !dob) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    if (phone.length !== 10 || isNaN(phone)) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     const formData = {
       userId: secureLocalStorage.getItem("medicityuser"),
       fullName: fullName,
@@ -38,15 +55,17 @@ const Familymember = () => {
       phone: phone,
       email: email,
     };
+
     axios
       .post(`${process.env.REACT_APP_API_KEY}member`, formData)
       .then((res) => {
         GetMember();
         toast.success("Member Added Successfully");
+        // Close modal manually
+        document.getElementById("addDependentClose").click();
       })
       .catch((error) => {
         toast.error(error.response?.data?.message || "Something went wrong");
-        console.log(error);
       });
   };
 
@@ -73,10 +92,32 @@ const Familymember = () => {
   };
 
   const UpdatedMember = () => {
+    // Validation
+    if (
+      !fullNameupdate ||
+      !relationNameupdate ||
+      !ageupdate ||
+      !phoneupdate ||
+      !emailupdate ||
+      !dobupdate
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    if (phoneupdate.length !== 10 || isNaN(phoneupdate)) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(emailupdate)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     const data = {
       memberId: addressId,
       fullName: fullNameupdate,
-
       relationName: relationNameupdate,
       age: ageupdate,
       dob: dobupdate,
@@ -84,15 +125,17 @@ const Familymember = () => {
       phone: phoneupdate,
       email: emailupdate,
     };
+
     axios
       .post(`${process.env.REACT_APP_API_KEY}updateMember`, data)
       .then((res) => {
         GetMember();
-        toast.success("Data Updated Successfuly");
+        toast.success("Data Updated Successfully");
+        // Close modal manually
+        document.getElementById("editDependentClose").click();
       })
       .catch((error) => {
         toast.error(error.response?.data?.message || "Something went wrong");
-        console.log(error);
       });
   };
 
@@ -494,33 +537,14 @@ const Familymember = () => {
                   >
                     Add your first family member to get started
                   </p>
-                  <button
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#1976d2",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      fontSize: "15px",
-                      fontWeight: "500",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      ":hover": {
-                        backgroundColor: "#1565c0",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
+                  <a
+                    href="#"
+                    className="btn btn-md btn-primary-gradient rounded-pill"
                     data-bs-toggle="modal"
-                    data-bs-target="#add_member_modal"
+                    data-bs-target="#add_dependent"
                   >
-                    <i
-                      className="fas fa-plus"
-                      style={{ marginRight: "8px", fontSize: "14px" }}
-                    ></i>
-                    Add Member
-                  </button>
+                    Add Dependants
+                  </a>
                 </div>
               )}
             </div>
@@ -715,8 +739,7 @@ const Familymember = () => {
                   <button
                     type="submit"
                     className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
-                  >
+                   >
                     Add Dependant
                   </button>
                 </div>

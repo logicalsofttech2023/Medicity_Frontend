@@ -60311,3 +60311,170 @@ padding: 10px !important;
 }
 
 
+
+
+.upload-area {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  background: #f9f9f9;
+  position: relative;
+  cursor: pointer;
+}
+
+.file-input {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  cursor: pointer;
+}
+
+.add-more, .browse-files {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.upload-text {
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.file-preview-container {
+  margin-top: 20px;
+}
+
+.preview-title {
+  margin-bottom: 15px;
+}
+
+.file-preview-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.delete-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  padding: 4px;
+  width: 25px;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 230px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.member-selection-container {
+  padding: 20px;
+}
+
+.member-list {
+  margin-top: 20px;
+}
+
+.member-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.member-item:hover {
+  background-color: #f8f9fa;
+}
+
+.member-item.selected {
+  background-color: #e7f5ff;
+  border-color: #4dabf7;
+}
+
+.member-info h5 {
+  margin-bottom: 5px;
+}
+
+.member-details {
+  display: flex;
+  gap: 15px;
+  color: #666;
+}
+
+.success-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.success-message {
+  margin-bottom: 30px;
+}
+
+.help-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.call-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+}
+
+.radio-label {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.radio-label.active {
+  background-color: #e7f5ff;
+  border-color: #4dabf7;
+}
+
+.radio-label input {
+  display: none;
+}
+
+

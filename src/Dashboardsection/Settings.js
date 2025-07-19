@@ -161,11 +161,11 @@ const Settings = () => {
                       Profile
                     </Link>
                   </li>
-                  <li className="nav-item" role="presentation">
+                  {/* <li className="nav-item" role="presentation">
                     <Link className="nav-link" to="/Changepassword">
                       Change Password
                     </Link>
-                  </li>
+                  </li> */}
                   {/* <li className="nav-item" role="presentation">
                 <a className="nav-link" href="two-factor-authentication.html">2 Factor Authentication</a>
               </li> */}

@@ -141,14 +141,13 @@ const Prescription = () => {
                 <div className="appointment-tabs">
                   <ul className="nav">
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/Descriptions"
                         className="nav-link active"
-                        data-bs-toggle="tab"
-                        data-bs-target="#prescription"
+                       
                       >
                         Prescriptions
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>

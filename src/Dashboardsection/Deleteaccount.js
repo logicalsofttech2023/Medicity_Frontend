@@ -5,59 +5,77 @@ import toast, { Toaster } from "react-hot-toast";
 import secureLocalStorage from "react-secure-storage";
 
 const Deleteaccount = () => {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const [reason, setReason] = useState("Other (Please specify)");
   const [customReason, setCustomReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const handleReasonChange = (event) => {
     setReason(event.target.value);
+    if (event.target.value !== "Other (Please specify)") {
+      setCustomReason("");
+    }
   };
-  const Deleted = async () => {
+  const deleteAccount = async () => {
     const userId = secureLocalStorage.getItem("medicityuser");
     const finalReason =
       reason === "Other (Please specify)" ? customReason : reason;
 
+    // Validation
     if (!finalReason.trim()) {
       toast.error("Please specify a reason for account deletion.");
       return;
     }
 
-    const data = {
-      userId: userId,
-      reason: finalReason,
-    };
+    setIsSubmitting(true);
 
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}deleteUser`, data)
-      .then((res) => {
-        toast.success(res.data.message);
-        setTimeout(() => {
-          Navigate("/Login");
-        }, 3000);
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-      });
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_KEY}deleteUser`,
+        {
+          userId: userId,
+          reason: finalReason,
+        }
+      );
+
+      toast.success(response.data.message);
+      secureLocalStorage.clear();
+      setTimeout(() => navigate("/Login"), 2000);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to delete account. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const [UserData, setUserData] = useState();
   useEffect(() => {
-    GetUser();
-  }, [0]);
-  const GetUser = async () => {
-    const data = {
-      userId: secureLocalStorage.getItem("medicityuser"),
+    const getUser = async () => {
+      try {
+        const userId = secureLocalStorage.getItem("medicityuser");
+        if (!userId) {
+          navigate("/Login");
+          return;
+        }
+
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_KEY}getUser`,
+          {
+            userId: userId,
+          }
+        );
+
+        setUserData(response.data.data);
+      } catch (error) {
+        toast.error("Failed to load user data");
+      }
     };
 
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}getUser`, data)
-      .then((res) => {
-        setUserData(res.data.data);
-
-        secureLocalStorage.clear();
-      })
-      .catch((error) => {});
-  };
+    getUser();
+  }, [navigate]);
   return (
     <div>
       <Toaster />
@@ -121,9 +139,9 @@ const Deleteaccount = () => {
                 <div className="widget-profile pro-widget-content">
                   <div className="profile-info-widget">
                     <Link to="/Settings" className="booking-doc-img">
-                      {UserData?.userProfile ? (
+                      {userData?.userProfile ? (
                         <img
-                          src={`${process.env.REACT_APP_IMG_URL}${UserData?.userProfile}`}
+                          src={`${process.env.REACT_APP_IMG_URL}${userData?.userProfile}`}
                         />
                       ) : (
                         <img
@@ -135,16 +153,16 @@ const Deleteaccount = () => {
                     <div className="profile-det-info">
                       <h3>
                         <Link to="/Settings">
-                          {UserData?.name ? UserData?.name : "Guest"}
+                          {userData?.name ? userData?.name : "Guest"}
                         </Link>
                       </h3>
                       <div className="patient-details">
                         <h5 className="mb-0">Patient ID : PT254654</h5>
                       </div>
                       <span>
-                        {UserData?.gender ? UserData?.gender : "Not Found"}
+                        {userData?.gender ? userData?.gender : "Not Found"}
                         <i className="fa-solid fa-circle" />{" "}
-                        {UserData?.dob ? UserData?.dob : "Not Found"}
+                        {userData?.dob ? userData?.dob : "Not Found"}
                       </span>
                     </div>
                   </div>
@@ -234,11 +252,11 @@ const Deleteaccount = () => {
                       Profile
                     </Link>
                   </li>
-                  <li className="nav-item" role="presentation">
+                  {/* <li className="nav-item" role="presentation">
                     <Link className="nav-link" to="/Changepassword">
                       Change Password
                     </Link>
-                  </li>
+                  </li> */}
                   {/* <li className="nav-item" role="presentation">
                 <a className="nav-link" href="two-factor-authentication.html">2 Factor Authentication</a>
               </li> */}
@@ -299,7 +317,7 @@ const Deleteaccount = () => {
                       data-bs-toggle="modal"
                       data-bs-target="#del-acc"
                     >
-                      Delete Account
+                      {isSubmitting ? "Processing..." : "Delete Account"}
                     </a>
                   </div>
                 </div>
@@ -323,6 +341,7 @@ const Deleteaccount = () => {
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                disabled={isSubmitting}
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -339,47 +358,43 @@ const Deleteaccount = () => {
 
                 {/* Reason Selection */}
                 {[
-                  {
-                    id: "del-acc1",
-                    value: "No longer using the service",
-                    text: "I no longer need this service and won’t be using it in the future.",
-                  },
-                  {
-                    id: "del-acc2",
-                    value: "Privacy concerns",
-                    text: "I am concerned about how my data is handled and want to remove my information.",
-                  },
-                  {
-                    id: "del-acc3",
-                    value: "Too many notifications/emails",
-                    text: "I’m overwhelmed by the volume of notifications or emails and would like to reduce them.",
-                  },
-                  {
-                    id: "del-acc4",
-                    value: "Poor user experience",
-                    text: "I’ve had difficulty using the platform, and it didn’t meet my expectations.",
-                  },
-                  { id: "del-acc5", value: "Other (Please specify)", text: "" },
-                ].map((item) => (
-                  <div className="form-check d-flex mb-3" key={item.id}>
+                  "No longer using the service",
+                  "Privacy concerns",
+                  "Too many notifications/emails",
+                  "Poor user experience",
+                  "Other (Please specify)",
+                ].map((option, index) => (
+                  <div
+                    className="form-check d-flex mb-3"
+                    key={`del-acc${index + 1}`}
+                  >
                     <input
                       className="form-check-input"
                       type="radio"
                       name="delete"
-                      id={item.id}
-                      value={item.value}
-                      checked={reason === item.value}
+                      id={`del-acc${index + 1}`}
+                      value={option}
+                      checked={reason === option}
                       onChange={handleReasonChange}
+                      disabled={isSubmitting}
                     />
                     <label
                       className="form-check-label fs-14 ms-2"
-                      htmlFor={item.id}
+                      htmlFor={`del-acc${index + 1}`}
                     >
-                      <span className="text-gray-9 fw-medium">
-                        {item.value}
-                      </span>
-                      {item.text && (
-                        <span className="d-block">{item.text}</span>
+                      <span className="text-gray-9 fw-medium">{option}</span>
+                      {index < 4 && (
+                        <span className="d-block">
+                          {
+                            [
+                              "I no longer need this service and won't be using it in the future.",
+                              "I am concerned about how my data is handled and want to remove my information.",
+                              "I'm overwhelmed by the volume of notifications or emails.",
+                              "I've had difficulty using the platform, and it didn't meet my expectations.",
+                              "",
+                            ][index]
+                          }
+                        </span>
                       )}
                     </label>
                   </div>
@@ -387,14 +402,20 @@ const Deleteaccount = () => {
 
                 {/* Custom Reason Input */}
                 {reason === "Other (Please specify)" && (
-                  <div className="ms-4">
+                  <div className="ms-4 mb-4">
                     <textarea
                       className="form-control"
                       rows="3"
                       placeholder="Please specify your reason"
                       value={customReason}
                       onChange={(e) => setCustomReason(e.target.value)}
-                    ></textarea>
+                      disabled={isSubmitting}
+                    />
+                    {!customReason.trim() && (
+                      <small className="text-danger">
+                        Please provide a reason
+                      </small>
+                    )}
                   </div>
                 )}
               </div>
@@ -411,12 +432,28 @@ const Deleteaccount = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={Deleted}
+                    onClick={deleteAccount}
                     data-bs-dismiss="modal"
                     type="button"
                     className="bg-red btn btn-md btn-primary-gradient rounded-pill"
+                    disabled={
+                      isSubmitting ||
+                      (reason === "Other (Please specify)" &&
+                        !customReason.trim())
+                    }
                   >
-                    Delete Account
+                    {isSubmitting ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Deleting...
+                      </>
+                    ) : (
+                      "Confirm Delete"
+                    )}
                   </button>
                 </div>
               </div>

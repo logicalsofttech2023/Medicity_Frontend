@@ -4,12 +4,25 @@ import toast, { Toaster } from "react-hot-toast";
 import secureLocalStorage from "react-secure-storage";
 
 const Descriptions = () => {
-  const [confirm, setconfirm] = useState(null);
-
-  const [MemberData, setMemberData] = useState();
+  const [confirm, setConfirm] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [memberData, setMemberData] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   const fileInputRef = useRef(null);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    gender: "Male",
+    fullName: "",
+    relationName: "",
+    age: "",
+    phone: "",
+    email: "",
+    dob: ""
+  });
 
   const handleFileChange = (e) => {
     const filesArray = Array.from(e.target.files);
@@ -26,73 +39,90 @@ const Descriptions = () => {
     fileInputRef.current.click();
   };
 
-  const [gender, setgender] = useState("Male");
-  const [fullName, setfullName] = useState("");
-  const [relationName, setrelationName] = useState("");
-  const [age, setage] = useState("");
-  const [phone, setphone] = useState("");
-  const [email, setemail] = useState("");
-  const [dob, setdob] = useState("");
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-  const AddMember = (e) => {
+  const addMember = async (e) => {
     e.preventDefault();
-    const formData = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-
-      fullName: fullName,
-
-      relationName: relationName,
-      age: age,
-      dob: dob,
-      gender: gender,
-      phone: phone,
-      email: email,
-    };
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}member`, formData)
-      .then((res) => {
-        GetMember();
-        toast.success("Member Added Successfully");
-      })
-      .catch((error) => {});
+    setIsSubmitting(true);
+    
+    try {
+      const payload = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+        ...formData
+      };
+      
+      await axios.post(`${process.env.REACT_APP_API_KEY}member`, payload);
+      await getMember();
+      toast.success("Member Added Successfully");
+      // Reset form
+      setFormData({
+        gender: "Male",
+        fullName: "",
+        relationName: "",
+        age: "",
+        phone: "",
+        email: "",
+        dob: ""
+      });
+    } catch (error) {
+      toast.error("Failed to add member");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
-    GetMember();
-  }, [0]);
-  const GetMember = async () => {
-    const data = {
-      userId: secureLocalStorage.getItem("medicityuser"),
-    };
+    getMember();
+  }, []);
 
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}getMembersByUser`, data)
-      .then((res) => {
-        setMemberData(res.data);
-      })
-      .catch((error) => {});
-  };
-
-  const Addprescription = (item) => {
-    const formData = new FormData();
-
-            formData.append("userId", secureLocalStorage.getItem("medicityuser"));            
-    formData.append("memberId", item);
-    {
-      selectedFiles?.map((images) => {
-        formData.append("files", images);
-      });
+  const getMember = async () => {
+    setIsLoading(true);
+    try {
+      const data = {
+        userId: secureLocalStorage.getItem("medicityuser"),
+      };
+      const res = await axios.post(`${process.env.REACT_APP_API_KEY}getMembersByUser`, data);
+      setMemberData(res.data);
+    } catch (error) {
+      toast.error("Failed to load members");
+    } finally {
+      setIsLoading(false);
     }
-
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}addPrescription`, formData)
-      .then((res) => {
-        GetMember();
-        toast.success(res.data.message);
-        setconfirm("success");
-      })
-      .catch((error) => {});
   };
+
+  const addPrescription = async (memberId) => {
+    if (!selectedFiles.length) {
+      toast.error("Please select at least one file");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("userId", secureLocalStorage.getItem("medicityuser"));            
+      formData.append("memberId", memberId);
+      
+      selectedFiles.forEach((image) => {
+        formData.append("files", image);
+      });
+
+      const res = await axios.post(`${process.env.REACT_APP_API_KEY}addPrescription`, formData);
+      toast.success(res.data.message);
+      setConfirm("success");
+      setSelectedFiles([]);
+    } catch (error) {
+      toast.error("Failed to upload prescription");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <Toaster />
@@ -108,11 +138,11 @@ const Descriptions = () => {
                       <i className="isax isax-home-15" />
                     </a>
                   </li>
-                  <li onClick={(()=>setconfirm(null))} className="breadcrumb-item">
-                  Prescription
-                    </li>
+                  <li onClick={() => setConfirm(null)} className="breadcrumb-item">
+                    Prescription
+                  </li>
                   <li className="breadcrumb-item active">
-                    Upload Prescriptionm
+                    Upload Prescription
                   </li>
                 </ol>
               </nav>
@@ -122,24 +152,11 @@ const Descriptions = () => {
       </div>
 
       {/* Upload Prescription Section */}
-
       {confirm === null ? (
-        <div
-          className="p-4"
-          style={{ width: "90%", margin: "auto", marginTop: "20px" }}
-        >
+        <div className="p-4" style={{ width: "90%", margin: "auto", marginTop: "20px" }}>
           <h3 style={{ marginBottom: "15px" }}>Upload Prescription</h3>
           {selectedFiles.length >= 1 ? (
-            <div
-              style={{
-                border: "2px dashed #ccc",
-                padding: "20px",
-                textAlign: "center",
-                borderRadius: "10px",
-                background: "#f9f9f9",
-                position: "relative",
-              }}
-            >
+            <div className="upload-area">
               <div>
                 <svg
                   stroke="currentColor"
@@ -157,15 +174,7 @@ const Descriptions = () => {
                   <line x1={12} y1={3} x2={12} y2={15} />
                 </svg>
 
-                <h4
-                  className="mt-3"
-                  style={{
-                    color: "#007bff",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                  onClick={() => fileInputRef.current.click()}
-                >
+                <h4 className="mt-3 add-more" onClick={handleAddMoreClick}>
                   + Add More
                 </h4>
               </div>
@@ -176,28 +185,11 @@ const Descriptions = () => {
                 multiple
                 accept=".jpg,.jpeg,.png,.doc,.docx,.pdf,.heic"
                 onChange={handleFileChange}
-                style={{
-                  opacity: 0,
-                  position: "absolute",
-                  width: "100%",
-                  height: "100%",
-                  left: 0,
-                  top: 0,
-                  cursor: "pointer",
-                }}
+                className="file-input"
               />
             </div>
           ) : (
-            <div
-              style={{
-                border: "2px dashed #ccc",
-                padding: "20px",
-                textAlign: "center",
-                borderRadius: "10px",
-                background: "#f9f9f9",
-                position: "relative",
-              }}
-            >
+            <div className="upload-area">
               <div>
                 <svg
                   stroke="currentColor"
@@ -214,18 +206,9 @@ const Descriptions = () => {
                   <polyline points="17 8 12 3 7 8" />
                   <line x1={12} y1={3} x2={12} y2={15} />
                 </svg>
-                <h4 style={{ margin: "15px 0", fontWeight: "bold" }}>
-                  Drag and Drop here
-                </h4>
+                <h4 className="upload-text">Drag and Drop here</h4>
                 <span>or</span>
-                <h4
-                  style={{
-                    color: "#007bff",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                  onClick={() => fileInputRef.current.click()}
-                >
+                <h4 className="browse-files" onClick={handleAddMoreClick}>
                   Browse Files
                 </h4>
               </div>
@@ -236,51 +219,21 @@ const Descriptions = () => {
                 multiple
                 accept=".jpg,.jpeg,.png,.doc,.docx,.pdf,.heic"
                 onChange={handleFileChange}
-                style={{
-                  opacity: 0,
-                  position: "absolute",
-                  width: "100%",
-                  height: "100%",
-                  left: 0,
-                  top: 0,
-                  cursor: "pointer",
-                }}
+                className="file-input"
               />
             </div>
           )}
+
           {/* Selected File Preview */}
           {selectedFiles.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
-              <h5 className="mb-2 mt-3">Selected Files:</h5>
+            <div className="file-preview-container">
+              <h5 className="preview-title">Selected Files:</h5>
               <div className="row gx-3 gy-3">
                 {selectedFiles.map((file, index) => (
-                  <div
-                    className="col-md-6 col-lg-6 mb-3"
-                    key={index}
-                    style={{
-                      position: "relative",
-                      display: "flex",
-                      flexDirection: "column",
-                      background: "#f1f1f1",
-                      padding: "10px",
-                      borderRadius: "5px",
-                    }}
-                  >
+                  <div className="col-md-6 col-lg-6 mb-3 file-preview-item" key={index}>
                     <svg
                       onClick={() => handleDelete(index)}
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        zIndex: 2,
-                        cursor: "pointer",
-                        background: "#fff",
-                        borderRadius: "50%",
-                        boxShadow: "0 0 5px rgba(0,0,0,0.2)",
-                        padding: "4px",
-                      }}
-                      width="20px"
-                      height="20px"
+                      className="delete-icon"
                       viewBox="0 0 17 18"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -294,90 +247,91 @@ const Descriptions = () => {
                     <img
                       src={URL.createObjectURL(file)}
                       alt={`preview-${index}`}
-                      style={{
-                        width: "100%",
-                        maxHeight: "230px",
-                        objectFit: "cover",
-                        borderRadius: "5px",
-                      }}
+                      className="preview-image"
                     />
                   </div>
                 ))}
               </div>
             </div>
           )}
+          
           {selectedFiles.length > 0 && (
-            <div className="align-center">
+            <div className="text-center mt-3">
               <button
-                onClick={() => setconfirm("okay")}
-                class="btn btn-primary-gradient w-50 mt-1 rounded-pill fw-bold"
+                onClick={() => setConfirm("selectMember")}
+                className="btn btn-primary-gradient w-50 rounded-pill fw-bold"
+                disabled={isSubmitting}
               >
-                Confirm
+                {isSubmitting ? 'Processing...' : 'Confirm'}
               </button>
             </div>
           )}
         </div>
-      ) : confirm === "okay" ? (
-        <div className="">
+      ) : confirm === "selectMember" ? (
+        <div className="member-selection-container">
           <div className="content doctor-content card">
             <div className="container">
               <div className="row">
-                {/* Profile Sidebar */}
-
-                {/* / Profile Sidebar */}
                 <div className="col-lg-12 col-xl-12">
                   <div className="dashboard-header">
-                    <h3>Select an existing member</h3>
+                    <h3>Select a member</h3>
+                    <button 
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => setConfirm(null)}
+                    >
+                      Back
+                    </button>
                   </div>
 
-                  {/* Depeendent Item */}
-                  {MemberData?.map((data) => {
-                    return (
-                      <div
-                        onClick={() => Addprescription(data?._id)}
-                        className="dependent-wrap d-flex align-items-start gap-3"
-                        key={data._id}
-                      >
-                        <div className="flex-grow-1">
-                          <div className="dependent-info">
-                            <div className="patinet-information">
-                              <div className="patient-info">
-                                <h5>Name: {data?.fullName}</h5>
-                                <ul>
-                                  <li>Relationship: {data?.relationName}</li>
-                                  <li>Gender: {data?.gender}</li>
-                                  <li>Age: {data?.age}</li>
-                                </ul>
-                              </div>
-                            </div>
-                            <div className="blood-info">
-                              <p>Dob: {data?.dob}</p>
-                              <h6>Phone: {data?.phone}</h6>
-                              <h6>Email: {data?.email}</h6>
+                  {isLoading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : memberData.length > 0 ? (
+                    <div className="member-list">
+                      {memberData.map((member) => (
+                        <div 
+                          className={`member-item ${selectedMember === member._id ? 'selected' : ''}`}
+                          key={member._id}
+                          onClick={() => setSelectedMember(member._id)}
+                        >
+                          <div className="member-info">
+                            <h5>{member.fullName}</h5>
+                            <div className="member-details">
+                              <span>Relationship: {member.relationName}</span>
+                              <span>Age: {member.age}</span>
+                              <span>Gender: {member.gender}</span>
                             </div>
                           </div>
-                          <div className="dependent-status mt-2"></div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p>No members found. Please add a member first.</p>
+                    </div>
+                  )}
 
-                  <div className="dashboard-header border-0 m-0">
-                    <ul className="header-list-btns">
-                      <li>
-                        <div className="input-block dash-search-input">
-                          <span className="search-icon">&nbsp;</span>
-                        </div>
-                      </li>
-                    </ul>
-                    <a
-                      href="#"
-                      className="btn btn-md border w-100 btn-primary-gradient rounded-pill"
+                  <div className="text-center mt-4">
+                    <button
+                      className="btn btn-primary me-2"
                       data-bs-toggle="modal"
                       data-bs-target="#add_dependent"
                     >
-                      + Add Dependants
-                    </a>
+                      + Add New Member
+                    </button>
+                    
+                    {selectedMember && (
+                      <button
+                        className="btn btn-success"
+                        onClick={() => addPrescription(selectedMember)}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Uploading...' : 'Upload Prescription'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -385,25 +339,17 @@ const Descriptions = () => {
           </div>
         </div>
       ) : confirm === "success" ? (
-        <div className="border p-5">
-          <div class=" myPrescriptions_success_cardTop__oJxIA">
-            <h4 className="align-center text-success">
-              Uploaded Successfully!
-            </h4>
-            <h6 className="mt-2 mb-2 align-center">
+        <div className="success-container">
+          <div className="success-message">
+            <h4 className="text-success">Uploaded Successfully!</h4>
+            <h6 className="mt-2 mb-2">
               Your prescription is in good hands! We will review your
               prescription and call you within 5 minutes with the best price
             </h6>
           </div>
-          <div class="align-center gap-3">
-            <span class="myPrescriptions_success_cardBottom__text__EAzaJ">
-              Need help right away?{" "}
-            </span>
-
-            <a
-              href="tel:+918988988787"
-              class="border p-2 myPrescriptions_call__btn__x_c7q"
-            >
+          <div className="help-section">
+            <span>Need help right away? </span>
+            <a href="tel:+918988988787" className="call-btn">
               <svg
                 width="20"
                 height="19"
@@ -413,18 +359,18 @@ const Descriptions = () => {
                 <path
                   d="M12.458 1.214a7.056 7.056 0 0 1 6.234 6.226M12.458 4.35a3.92 3.92 0 0 1 3.1 3.1"
                   stroke="#E00646"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
                 <path
-                  clip-rule="evenodd"
+                  clipRule="evenodd"
                   d="M9.518 10.043c3.531 3.531 4.333-.554 6.581 1.694 2.168 2.167 3.416 2.601.668 5.347-.344.277-2.53 3.604-10.213-4.077-7.684-7.682-4.359-9.87-4.082-10.214 2.753-2.754 3.18-1.5 5.349.667 2.248 2.248-1.835 3.052 1.697 6.583Z"
                   stroke="url(#Calling_svg__a)"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
                 <defs>
                   <linearGradient
                     id="Calling_svg__a"
@@ -434,24 +380,34 @@ const Descriptions = () => {
                     y2="18.037"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <stop stop-color="#0E3F6C"></stop>
-                    <stop offset="1" stop-color="#235B8E"></stop>
+                    <stop stopColor="#0E3F6C" />
+                    <stop offset="1" stopColor="#235B8E" />
                   </linearGradient>
                 </defs>
-              </svg>{" "}
-              &nbsp;
-              <span class="myPrescriptions_success_cardBottom__callText__0ElIA">
-                Call Now
-              </span>
+              </svg>
+              <span>Call Now</span>
             </a>
+          </div>
+          <div className="text-center mt-4">
+            <button 
+              className="btn btn-primary"
+              onClick={() => {
+                setConfirm(null);
+                setSelectedFiles([]);
+              }}
+            >
+              Upload Another Prescription
+            </button>
           </div>
         </div>
       ) : null}
+
+      {/* Add Member Modal */}
       <div className="modal fade custom-modals" id="add_dependent">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h3 className="modal-title">Add Dependant</h3>
+              <h3 className="modal-title">Add Member</h3>
               <button
                 type="button"
                 className="btn-close"
@@ -461,19 +417,20 @@ const Descriptions = () => {
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
-            <form onSubmit={AddMember}>
+            <form onSubmit={addMember}>
               <div className="add-dependent">
                 <div className="modal-body pb-0">
                   <div className="row">
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
-                          Full-Name <span className="text-danger">*</span>
+                          Full Name <span className="text-danger">*</span>
                         </label>
                         <input
-                          placeholder="Full-Name"
-                          value={fullName}
-                          onChange={(e) => setfullName(e.target.value)}
+                          placeholder="Full Name"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleInputChange}
                           type="text"
                           required
                           className="form-control"
@@ -481,14 +438,15 @@ const Descriptions = () => {
                       </div>
                     </div>
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
                           Relationship <span className="text-danger">*</span>
                         </label>
                         <input
                           placeholder="Relationship"
-                          value={relationName}
-                          onChange={(e) => setrelationName(e.target.value)}
+                          name="relationName"
+                          value={formData.relationName}
+                          onChange={handleInputChange}
                           type="text"
                           required
                           className="form-control"
@@ -497,125 +455,109 @@ const Descriptions = () => {
                     </div>
 
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
                           Age <span className="text-danger">*</span>
                         </label>
-                        <div className="form-icon">
-                          <input
-                            placeholder="Age"
-                            required
-                            value={age}
-                            min={0}
-                            onChange={(e) => setage(e.target.value)}
-                            type="number"
-                            className="form-control"
-                          />
-                        </div>
+                        <input
+                          placeholder="Age"
+                          required
+                          name="age"
+                          value={formData.age}
+                          min={0}
+                          onChange={handleInputChange}
+                          type="number"
+                          className="form-control"
+                        />
                       </div>
                     </div>
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
                           Date of Birth <span className="text-danger">*</span>
                         </label>
-                        <div className="form-icon">
-                          <input
-                            required
-                            value={dob}
-                            onChange={(e) => setdob(e.target.value)}
-                            type="date"
-                            className="form-control"
-                          />
-                        </div>
+                        <input
+                          required
+                          name="dob"
+                          value={formData.dob}
+                          onChange={handleInputChange}
+                          type="date"
+                          className="form-control"
+                        />
                       </div>
                     </div>
 
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
                           Phone <span className="text-danger">*</span>
                         </label>
-                        <div className="form-icon">
-                          <input
-                            placeholder="Phone"
-                            value={phone}
-                            required
-                            onChange={(e) => setphone(e.target.value)}
-                            type="text"
-                            maxLength={10}
-                            minLength={10}
-                            min={0}
-                            className="form-control"
-                          />
-                        </div>
+                        <input
+                          placeholder="Phone"
+                          name="phone"
+                          value={formData.phone}
+                          required
+                          onChange={handleInputChange}
+                          type="tel"
+                          pattern="[0-9]{10}"
+                          maxLength={10}
+                          minLength={10}
+                          className="form-control"
+                        />
                       </div>
                     </div>
                     <div className="col-md-6">
-                      <div className="form-wrap">
+                      <div className="form-group">
                         <label className="form-label">
                           Email <span className="text-danger">*</span>
                         </label>
-                        <div className="form-icon">
-                          <input
-                            placeholder="Email"
-                            required
-                            value={email}
-                            onChange={(e) => setemail(e.target.value)}
-                            type="email"
-                            className="form-control"
-                          />
-                        </div>
+                        <input
+                          placeholder="Email"
+                          required
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          type="email"
+                          className="form-control"
+                        />
                       </div>
                     </div>
-                    <div className="col-md-6">
-                      <div className="form-wrap">
+                    <div className="col-md-12">
+                      <div className="form-group">
                         <label className="form-label">
-                          Select Gender <span className="text-danger">*</span>
+                          Gender <span className="text-danger">*</span>
                         </label>
-                        <div className="radio-selection d-flex border">
-                          <div className="flex-grow-1">
+                        <div className="radio-group">
+                          <label className={`radio-label ${formData.gender === 'Male' ? 'active' : ''}`}>
                             <input
                               type="radio"
-                              className="btn-check"
                               name="gender"
-                              id="option1"
                               value="Male"
-                              checked={gender === "Male"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={formData.gender === "Male"}
+                              onChange={handleInputChange}
                             />
-                            <label className="btn btn-white" htmlFor="option1">
-                              Male
-                            </label>
-                          </div>
-                          <div className="flex-grow-1">
+                            Male
+                          </label>
+                          <label className={`radio-label ${formData.gender === 'Female' ? 'active' : ''}`}>
                             <input
                               type="radio"
-                              className="btn-check"
                               name="gender"
-                              id="option2"
                               value="Female"
-                              checked={gender === "Female"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={formData.gender === "Female"}
+                              onChange={handleInputChange}
                             />
-                            <label className="btn btn-white" htmlFor="option2">
-                              Female
-                            </label>
-                          </div>
-                          <div className="flex-grow-1">
+                            Female
+                          </label>
+                          <label className={`radio-label ${formData.gender === 'Others' ? 'active' : ''}`}>
                             <input
                               type="radio"
-                              className="btn-check"
                               name="gender"
-                              id="option3"
                               value="Others"
-                              checked={gender === "Others"}
-                              onChange={(e) => setgender(e.target.value)}
+                              checked={formData.gender === "Others"}
+                              onChange={handleInputChange}
                             />
-                            <label className="btn btn-white" htmlFor="option3">
-                              Others
-                            </label>
-                          </div>
+                            Others
+                          </label>
                         </div>
                       </div>
                     </div>
@@ -624,19 +566,19 @@ const Descriptions = () => {
               </div>
               <div className="modal-footer">
                 <div className="modal-btn text-end">
-                  <a
-                    href="#"
-                    className="btn btn-md btn-dark rounded-pill"
+                  <button
+                    type="button"
+                    className="btn btn-md btn-outline-secondary rounded-pill"
                     data-bs-dismiss="modal"
                   >
                     Cancel
-                  </a>
+                  </button>
                   <button
                     type="submit"
-                    className="btn btn-md btn-primary-gradient rounded-pill"
-                    data-bs-dismiss="modal"
+                    className="btn btn-md btn-primary rounded-pill"
+                    disabled={isSubmitting}
                   >
-                    Add Dependant
+                    {isSubmitting ? 'Adding...' : 'Add Member'}
                   </button>
                 </div>
               </div>
@@ -649,3 +591,169 @@ const Descriptions = () => {
 };
 
 export default Descriptions;
+
+// Add these styles to your CSS file
+/*
+.upload-area {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  background: #f9f9f9;
+  position: relative;
+  cursor: pointer;
+}
+
+.file-input {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  cursor: pointer;
+}
+
+.add-more, .browse-files {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.upload-text {
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.file-preview-container {
+  margin-top: 20px;
+}
+
+.preview-title {
+  margin-bottom: 15px;
+}
+
+.file-preview-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.delete-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  padding: 4px;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 230px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.member-selection-container {
+  padding: 20px;
+}
+
+.member-list {
+  margin-top: 20px;
+}
+
+.member-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.member-item:hover {
+  background-color: #f8f9fa;
+}
+
+.member-item.selected {
+  background-color: #e7f5ff;
+  border-color: #4dabf7;
+}
+
+.member-info h5 {
+  margin-bottom: 5px;
+}
+
+.member-details {
+  display: flex;
+  gap: 15px;
+  color: #666;
+}
+
+.success-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.success-message {
+  margin-bottom: 30px;
+}
+
+.help-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.call-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+}
+
+.radio-label {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.radio-label.active {
+  background-color: #e7f5ff;
+  border-color: #4dabf7;
+}
+
+.radio-label input {
+  display: none;
+}
+*/
