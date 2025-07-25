@@ -49,6 +49,7 @@ import AboutUs from "./Components/AboutUs";
 import ContactUs from "./Components/ContactUs";
 import Faqs from "./Components/Faqs";
 import Membership from "./Components/Membership";
+import BookAnyTest from "./Components/BookAnyTest";
 
 function Layout() {
   const location = useLocation();
@@ -87,6 +88,7 @@ function Layout() {
     "/contactUs",
     "/faqs",
     "/membership",
+    "/bookAnyTest",
   ];
   const showFooter = [
     "/",
@@ -122,6 +124,7 @@ function Layout() {
     "/contactUs",
     "/faqs",
     "/membership",
+    "/bookAnyTest",
   ];
 
   useEffect(() => {
@@ -263,6 +266,11 @@ function Layout() {
         <Route
           path="/membership"
           element={<Protect ComponentName={Membership} />}
+        ></Route>
+
+        <Route
+          path="/bookAnyTest"
+          element={<Protect ComponentName={BookAnyTest} />}
         ></Route>
 
         <Route path="*" element={<Error />} />

@@ -27,8 +27,10 @@ const Mainheader = () => {
 
   // Check if any service sub-route is active
   const isServiceActive = () => {
-    return ["/Doctorscurateddetails", "/Booking", "/Findtestbycategory"].some(
-      isActive
+    return (
+      location.pathname === "/bookAnyTest" ||
+      location.pathname === "/Booking" ||
+      location.pathname === "/Findtestbycategory"
     );
   };
 
@@ -309,9 +311,12 @@ const Mainheader = () => {
                 </div>
                 <ul className="main-nav">
                   <li className={isActive("/") ? "active" : ""}>
-                    <Link style={{ color: "rgb(12, 48, 185)" }} to="/">Home</Link>
+                    <Link style={{ color: "rgb(12, 48, 185)" }} to="/">
+                      Home
+                    </Link>
                   </li>
 
+                  {/* Service Book Dropdown */}
                   <li
                     className={`has-submenu ${
                       isServiceActive() ? "active" : ""
@@ -325,12 +330,8 @@ const Mainheader = () => {
                         openDropdown === "service" ? "show" : ""
                       }`}
                     >
-                      <li
-                        className={
-                          isActive("/Doctorscurateddetails") ? "active" : ""
-                        }
-                      >
-                        <Link to="/Doctorscurateddetails">Book Any Test</Link>
+                      <li className={isActive("/bookAnyTest") ? "active" : ""}>
+                        <Link to="/bookAnyTest">Book Any Test</Link>
                       </li>
                       <li className={isActive("/Booking") ? "active" : ""}>
                         <Link to="/Booking">Book Appointment</Link>
@@ -347,9 +348,12 @@ const Mainheader = () => {
                     </ul>
                   </li>
 
+                  {/* Blood Tests Dropdown */}
                   <li
                     className={`has-submenu ${
-                      openDropdown === "blood" ? "active" : ""
+                      location.pathname === "/Doctorscurateddetails"
+                        ? "active"
+                        : ""
                     }`}
                   >
                     <a href="#" onClick={() => toggleDropdown("blood")}>
@@ -359,10 +363,6 @@ const Mainheader = () => {
                       className={`submenu ${
                         openDropdown === "blood" ? "show" : ""
                       }`}
-                      style={{
-                        maxHeight: "300px",
-                        overflowY: "auto",
-                      }}
                     >
                       {categories.map((category) => (
                         <li
@@ -406,7 +406,10 @@ const Mainheader = () => {
               <ul className="nav header-navbar-rht">
                 {mediid && (
                   <>
-                    <li className="d-none d-md-block" style={{ padding: "10px"}}>
+                    <li
+                      className="d-none d-md-block"
+                      style={{ padding: "10px" }}
+                    >
                       <Link to="/Checkout">
                         <div className="shopping-cart-amount">
                           <div className="shopping-cart-icon">
@@ -643,18 +646,14 @@ const Mainheader = () => {
                 >
                   <li>
                     <Link
-                      to="/Doctorscurateddetails"
+                      to="/bookAnyTest"
                       onClick={toggleMobileMenu}
                       style={{
                         display: "block",
                         padding: "10px",
-                        color: isActive("/Doctorscurateddetails")
-                          ? "#2d6bd2"
-                          : "#555",
+                        color: isActive("/bookAnyTest") ? "#2d6bd2" : "#555",
                         textDecoration: "none",
-                        fontWeight: isActive("/Doctorscurateddetails")
-                          ? "500"
-                          : "400",
+                        fontWeight: isActive("/bookAnyTest") ? "500" : "400",
                       }}
                     >
                       Book Any Test
@@ -705,12 +704,19 @@ const Mainheader = () => {
                 style={{
                   display: "block",
                   padding: "12px 10px",
-                  color: openDropdown === "blood" ? "#2d6bd2" : "#333",
+                  color:
+                    location.pathname === "/Doctorscurateddetails" ||
+                    openDropdown === "blood"
+                      ? "#2d6bd2"
+                      : "#333",
                   textDecoration: "none",
                   fontWeight: "500",
                   cursor: "pointer",
                   backgroundColor:
-                    openDropdown === "blood" ? "#f0f7ff" : "transparent",
+                    location.pathname === "/Doctorscurateddetails" ||
+                    openDropdown === "blood"
+                      ? "#f0f7ff"
+                      : "transparent",
                   borderRadius: "5px",
                 }}
               >

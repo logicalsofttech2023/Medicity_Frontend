@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
 import ProfileSidebar from "./ProfileSidebar";
 
@@ -10,9 +10,11 @@ const Bookingdetails = () => {
   const { id } = location.state || {};
   const [UserData, setUserData] = useState();
   const [UserBookingData, setUserBookingData] = useState();
+  
   useEffect(() => {
     GetUser();
-  }, [0]);
+  }, []);
+  
   const GetUser = async () => {
     const data = {
       userId: secureLocalStorage.getItem("medicityuser"),
@@ -27,8 +29,11 @@ const Bookingdetails = () => {
   };
 
   useEffect(() => {
-    GetgetbookingOrder(id);
-  }, [0]);
+    if (id) {
+      GetgetbookingOrder(id);
+    }
+  }, [id]);
+  
   const GetgetbookingOrder = async (id) => {
     const data = {
       bookingOrderId: id,
@@ -43,6 +48,28 @@ const Bookingdetails = () => {
         console.log(error);
       });
   };
+
+  // Helper function to check if packages exist
+  const hasPackages = () => {
+    return UserBookingData?.packageIds?.length > 0;
+  };
+
+  // Helper function to check if tests exist
+  const hasTests = () => {
+    return UserBookingData?.testDetails?.length > 0;
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not specified";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
   return (
     <div>
       <div className="breadcrumb-bar">
@@ -61,10 +88,7 @@ const Bookingdetails = () => {
                   </li>
                   <li className="breadcrumb-item active">Appointments</li>
                 </ol>
-                <h2
-                  style={{ textAlign: "justify" }}
-                  className="breadcrumb-title"
-                >
+                <h2 style={{ textAlign: "justify" }} className="breadcrumb-title">
                   Appointments
                 </h2>
               </nav>
@@ -94,18 +118,14 @@ const Bookingdetails = () => {
           />
         </div>
       </div>
-      {/* /Breadcrumb */}
-      {/* Page Content */}
+
       <div className="content">
         <div className="container">
           <div className="row">
-            {/* Profile Sidebar */}
             <div className="col-lg-5 col-xl-4">
-              {/* Profile Sidebar */}
               <ProfileSidebar />
-              {/* /Profile Sidebar */}
             </div>
-            {/* / Profile Sidebar */}
+            
             <div className="col-lg-7 col-xl-8">
               <div className="dashboard-header mb-4">
                 <div className="header-back d-flex align-items-center gap-3">
@@ -121,7 +141,6 @@ const Bookingdetails = () => {
               </div>
 
               <div className="appointment-details-wrap">
-                {/* Appointment Detail Card */}
                 <div
                   className="appointment-detail-card bg-white rounded-3 p-4 mb-4"
                   style={{
@@ -130,7 +149,6 @@ const Bookingdetails = () => {
                   }}
                 >
                   <div className="mb-3">
-                    {/* First Row - Booking ID and Date */}
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <div style={{ marginBottom: "15px" }}>
                         <h5 className="m-0 text-primary fw-bold">
@@ -139,18 +157,13 @@ const Bookingdetails = () => {
                       </div>
                       <div>
                         <small className="text-muted">
-                          Booked on:{" "}
-                          {new Date(
-                            UserBookingData?.bookingDate
-                          ).toLocaleString()}
+                          Booked on: {formatDate(UserBookingData?.bookingDate)}
                         </small>
                       </div>
                     </div>
 
-                    {/* Second Row - Status Badges */}
                     <div className="d-flex justify-content-between align-items-center">
                       <div className="d-flex align-items-center gap-3">
-                        {/* Payment Method */}
                         <div className="d-flex align-items-center gap-1">
                           <small className="text-muted">Method:</small>
                           <span
@@ -163,11 +176,10 @@ const Bookingdetails = () => {
                               fontSize: "0.8rem",
                             }}
                           >
-                            {UserBookingData?.paymentMode}
+                            {UserBookingData?.paymentMode || "N/A"}
                           </span>
                         </div>
 
-                        {/* Payment Status */}
                         <div className="d-flex align-items-center gap-1">
                           <small className="text-muted">Payment:</small>
                           <span
@@ -183,14 +195,11 @@ const Bookingdetails = () => {
                               fontSize: "0.8rem",
                             }}
                           >
-                            {UserBookingData?.paymentStatus
-                              ? "Paid"
-                              : "Pending"}
+                            {UserBookingData?.paymentStatus ? "Paid" : "Pending"}
                           </span>
                         </div>
                       </div>
 
-                      {/* Booking Status - Right aligned */}
                       <div className="d-flex align-items-center gap-1">
                         <small className="text-muted">Status:</small>
                         <span
@@ -223,7 +232,7 @@ const Bookingdetails = () => {
                       <h6 className="m-0 text-muted">Total Amount</h6>
                       <div className="d-flex align-items-baseline gap-2">
                         <h4 className="m-0 text-success fw-bold">
-                          ₹{UserBookingData?.payableAmount}
+                          ₹{UserBookingData?.payableAmount || 0}
                         </h4>
                         {UserBookingData?.discountAmount > 0 && (
                           <small className="text-danger text-decoration-line-through">
@@ -239,12 +248,11 @@ const Bookingdetails = () => {
                     )}
                   </div>
 
-                  {/* Pricing Breakdown */}
                   <div className="pricing-breakdown mb-4 p-3 bg-light rounded">
                     <h6 className="mb-3 fw-semibold">Pricing Breakdown</h6>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Base Price</span>
-                      <span>₹{UserBookingData?.totalAmount}</span>
+                      <span>₹{UserBookingData?.totalAmount || 0}</span>
                     </div>
                     {UserBookingData?.discountAmount > 0 && (
                       <div className="d-flex justify-content-between mb-2">
@@ -273,7 +281,7 @@ const Bookingdetails = () => {
                     <hr className="my-2" />
                     <div className="d-flex justify-content-between fw-bold">
                       <span>Total Payable</span>
-                      <span>₹{UserBookingData?.payableAmount}</span>
+                      <span>₹{UserBookingData?.payableAmount || 0}</span>
                     </div>
                   </div>
 
@@ -283,17 +291,12 @@ const Bookingdetails = () => {
                         <i className="far fa-calendar-alt text-muted me-2"></i>
                       </div>
                       <div>
-                        <h6 className="mb-1 fw-semibold">
-                          Appointment Date & Time
-                        </h6>
+                        <h6 className="mb-1 fw-semibold">Appointment Date & Time</h6>
                         <p className="m-0 text-dark">
-                          {UserBookingData?.sampleCollectDate ||
-                            "Not specified"}{" "}
-                          - {UserBookingData?.sampleCollectTime}
+                          {UserBookingData?.sampleCollectDate || "Not specified"} - {UserBookingData?.sampleCollectTime || "Not specified"}
                         </p>
                         <small className="text-muted">
-                          Report Time:{" "}
-                          {UserBookingData?.packageIds[0]?.report_time} hours
+                          Report Time: {UserBookingData?.packageIds?.[0]?.report_time || "N/A"} hours
                         </small>
                       </div>
                     </div>
@@ -305,14 +308,12 @@ const Bookingdetails = () => {
                       <div>
                         <h6 className="mb-1 fw-semibold">Address</h6>
                         <p className="m-0 text-dark">
-                          {`${UserBookingData?.address[0]?.houseNo || ""}, ${
-                            UserBookingData?.address[0]?.landMark || ""
-                          }, ${UserBookingData?.address[0]?.address || ""}`}
+                          {`${UserBookingData?.address?.[0]?.houseNo || ""}, ${
+                            UserBookingData?.address?.[0]?.landMark || ""
+                          }, ${UserBookingData?.address?.[0]?.address || ""}`}
                         </p>
                         <p className="m-0 text-dark">
-                          Pincode:{" "}
-                          {UserBookingData?.address[0]?.pincode ||
-                            "Not specified"}
+                          Pincode: {UserBookingData?.address?.[0]?.pincode || "Not specified"}
                         </p>
                       </div>
                     </div>
@@ -324,8 +325,7 @@ const Bookingdetails = () => {
                       <div>
                         <h6 className="mb-1 fw-semibold">Place Type</h6>
                         <p className="m-0 text-dark">
-                          {UserBookingData?.address[0]?.placeType ||
-                            "Not specified"}
+                          {UserBookingData?.address?.[0]?.placeType || "Not specified"}
                         </p>
                       </div>
                     </div>
@@ -335,23 +335,19 @@ const Bookingdetails = () => {
                         <i className="fas fa-info-circle text-muted me-2"></i>
                       </div>
                       <div>
-                        <h6 className="mb-1 fw-semibold">
-                          Additional Information
-                        </h6>
+                        <h6 className="mb-1 fw-semibold">Additional Information</h6>
                         <p className="m-0 text-dark">
-                          Fasting Required:{" "}
-                          {UserBookingData?.packageIds[0]?.fasting_time} hours
+                          Fasting Required: {UserBookingData?.packageIds?.[0]?.fasting_time || "N/A"} hours
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Members Section */}
                 <div className="recent-appointments">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <h5 className="m-0 fw-semibold">
-                      Members ({UserBookingData?.members?.length})
+                      Members ({UserBookingData?.members?.length || 0})
                     </h5>
                   </div>
 
@@ -373,8 +369,7 @@ const Bookingdetails = () => {
                           <div className="d-flex flex-wrap gap-2">
                             <span className="badge bg-light text-dark">
                               <i className="fas fa-birthday-cake me-1"></i>
-                              {data?.age} years (DOB:{" "}
-                              {new Date(data?.dob).toLocaleDateString()})
+                              {data?.age} years (DOB: {formatDate(data?.dob)})
                             </span>
                             <span className="badge bg-light text-dark">
                               <i className="fas fa-venus-mars me-1"></i>
@@ -400,53 +395,84 @@ const Bookingdetails = () => {
 
                       <hr className="my-3" />
 
-                      <h6 className="fw-semibold mb-3">Selected Packages</h6>
-
-                      {UserBookingData?.packageIds?.map((pack, i) => (
-                        <div
-                          key={i}
-                          className="package-item d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded"
-                        >
-                          <div>
-                            <h6 className="m-0 fw-semibold">{pack?.title}</h6>
-                            <div className="d-flex flex-wrap gap-2 mt-2">
-                              <span className="badge bg-info text-white">
-                                ₹{pack?.discount_price} (Original: ₹
-                                {pack?.price})
-                              </span>
-                              <span className="badge bg-secondary text-white">
-                                {pack?.total_test} Tests
-                              </span>
-                              <span className="badge bg-dark text-white">
-                                For {pack?.gender}, Age {pack?.ageGroup}+
-                              </span>
+                      {/* Packages Section */}
+                      {hasPackages() && (
+                        <>
+                          <h6 className="fw-semibold mb-3">Selected Packages</h6>
+                          {UserBookingData?.packageIds?.map((pack, i) => (
+                            <div
+                              key={i}
+                              className="package-item d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded"
+                            >
+                              <div>
+                                <h6 className="m-0 fw-semibold">{pack?.title}</h6>
+                                <div className="d-flex flex-wrap gap-2 mt-2">
+                                  <span className="badge bg-info text-white">
+                                    ₹{pack?.discount_price} (Original: ₹{pack?.price})
+                                  </span>
+                                  <span className="badge bg-secondary text-white">
+                                    {pack?.total_test} Tests
+                                  </span>
+                                  <span className="badge bg-dark text-white">
+                                    For {pack?.gender}, Age {pack?.ageGroup}+
+                                  </span>
+                                </div>
+                                <div className="mt-2">
+                                  <h6 className="small fw-semibold mb-1">Tests Included:</h6>
+                                  <div className="d-flex flex-wrap gap-2">
+                                    {pack?.test?.map((test, idx) => (
+                                      <span key={idx} className="badge bg-light text-dark">
+                                        {test.test_name}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                              
                             </div>
-                            <div className="mt-2">
-                              <h6 className="small fw-semibold mb-1">
-                                Tests Included:
-                              </h6>
-                              <div className="d-flex flex-wrap gap-2">
-  {pack?.test?.map((test, idx) => (
-    <span key={idx} className="badge bg-light text-dark">
-      {test.test_name}
-    </span>
-  ))}
-</div>
+                          ))}
+                        </>
+                      )}
 
-                            </div>
+                      {/* Tests Section */}
+                      {hasTests() && (
+                        <>
+                          <h6 className="fw-semibold mb-3">
+                            {hasPackages() ? "Additional Tests" : "Selected Tests"}
+                          </h6>
+                          <div className="test-list">
+                            {UserBookingData?.testDetails?.map((test, i) => (
+                              <div
+                                key={i}
+                                className="test-item d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded"
+                              >
+                                <div>
+                                  <h6 className="m-0 fw-semibold">{test.test_name}</h6>
+                                  <div className="d-flex gap-2 mt-1">
+                                    <span className="badge bg-info text-white">
+                                      ₹{test.test_rate}
+                                    </span>
+                                    <span className="badge bg-secondary text-white">
+                                      Category: {test.category_id}
+                                    </span>
+                                    <span className="badge bg-dark text-white">
+                                      Type: {test.test_type === 1 ? "Lab Test" : "Other"}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                              </div>
+                            ))}
                           </div>
-                          <button
-                            onClick={() =>
-                              Navigate(
-                                `/Healthcheckuppackagedetails/${pack?._id}`
-                              )
-                            }
-                            className="btn btn-sm btn-outline-primary align-self-start"
-                          >
-                            View
-                          </button>
+                        </>
+                      )}
+
+                      {/* No content message */}
+                      {!hasPackages() && !hasTests() && (
+                        <div className="alert alert-info mb-0">
+                          No packages or tests found in this booking.
                         </div>
-                      ))}
+                      )}
                     </div>
                   ))}
                 </div>

@@ -51,8 +51,9 @@ const Bookingform = () => {
   // Other state
   const [bookingid, setbookingid] = useState("");
   const [addressId, setaddressId] = useState("");
-  const cartIds = localStorage.getItem("cartIds");
+  const cartIds = localStorage.getItem("packageIds");
   const paymentInfo = JSON.parse(localStorage.getItem("paymentInfo"));
+  console.log(paymentInfo);
 
   // Time slots
   const slots = [
@@ -325,11 +326,158 @@ const Bookingform = () => {
     return today.toISOString().split("T")[0];
   };
 
+  // const BookAppoinment = async () => {
+  //   setLoading(true);
+  //   Swal.fire({
+  //     title: "Processing Payment",
+  //     html: "Please wait while we process your payment...",
+  //     allowOutsideClick: false,
+  //     didOpen: () => {
+  //       Swal.showLoading();
+  //     },
+  //   });
+
+  //   const userId = secureLocalStorage.getItem("medicityuser");
+  //   const amountToPay = paymentInfo.finalTotal;
+
+  //   try {
+  //     // Step 1: Create Razorpay Order
+  //     const orderResponse = await axios.post(
+  //       `${process.env.REACT_APP_API_KEY}createRazorpayOrder`,
+  //       {
+  //         amount: amountToPay,
+  //       }
+  //     );
+
+  //     const { id: orderId } = orderResponse.data;
+
+  //     // Step 2: Open Razorpay Checkout
+  //     const options = {
+  //       key: process.env.REACT_APP_RAZORPAY_KEY,
+  //       amount: amountToPay * 100,
+  //       currency: "INR",
+  //       name: "Medicity Booking",
+  //       description: "Package Payment",
+  //       order_id: orderId,
+  //       handler: async function (response) {
+  //         try {
+  //           Swal.fire({
+  //             title: "Processing Booking",
+  //             html: "Your payment was successful! Completing your booking...",
+  //             allowOutsideClick: false,
+  //             didOpen: () => {
+  //               Swal.showLoading();
+  //             },
+  //           });
+
+  //           // Step 3: After Payment Success, Call bookedOrder API
+  //           const bookingData = {
+  //             userId,
+  //             packageIds: cartIds || [],
+  //             members: bookingDetails.selectedDependants.join(","),
+  //             address: bookingDetails.selectedAddressId.toString(),
+  //             discountAmount: paymentInfo.discount,
+  //             totalAmount: paymentInfo.totalAmount,
+  //             payableAmount: paymentInfo.finalTotal,
+  //             offerAmount: "10",
+  //             giftAmount: "20",
+  //             paymentStatus: true,
+  //             paymentMode: "Online",
+  //             paymentId: response.razorpay_payment_id,
+  //             report: bookingDetails.report,
+  //             sampleCollectDate: bookingDetails.selectedDate,
+  //             sampleCollectTime: bookingDetails.selectedSlot,
+  //             testDetail: JSON.parse(localStorage.getItem("testDetails")),
+  //           };
+
+  //           const bookRes = await axios.post(
+  //             `${process.env.REACT_APP_API_KEY}bookedOrder`,
+  //             bookingData
+  //           );
+
+  //           setbookingid(bookRes.data.data.bookingId);
+  //           handleBookingChange("paymentStatus", "success");
+  //           GetAddress();
+
+  //           Swal.fire({
+  //             icon: "success",
+  //             title: "Booking Successful!",
+  //             text: bookRes.data.message,
+  //             showCancelButton: true,
+  //             confirmButtonText: "View Booking",
+  //             cancelButtonText: "Close",
+  //           }).then((result) => {
+  //             if (result.isConfirmed) {
+  //               Navigate(`/Bookingappoinment`);
+  //               localStorage.removeItem("paymentInfo");
+  //               localStorage.removeItem("packageIds");
+  //               localStorage.removeItem("testDetails");
+  //             } else {
+  //               nextStep();
+  //             }
+  //           });
+  //         } catch (error) {
+  //           handleBookingChange("paymentStatus", "failed");
+  //           Swal.fire({
+  //             icon: "error",
+  //             title: "Booking Failed",
+  //             text: "Your payment was successful but booking failed. Please contact support.",
+  //             confirmButtonText: "OK",
+  //           });
+  //           console.error("Booking error:", error);
+  //         }
+  //       },
+  //       prefill: {
+  //         name: "Test User",
+  //         email: "user@medicity",
+  //         contact: "1234567890",
+  //       },
+  //       theme: {
+  //         color: "#0e76a8",
+  //       },
+  //       modal: {
+  //         ondismiss: function () {
+  //           handleBookingChange("paymentStatus", "failed");
+  //           Swal.fire({
+  //             icon: "info",
+  //             title: "Payment Cancelled",
+  //             text: "You cancelled the payment process",
+  //             confirmButtonText: "OK",
+  //           });
+  //         },
+  //       },
+  //     };
+
+  //     const razor = new window.Razorpay(options);
+  //     razor.on("payment.failed", function (response) {
+  //       handleBookingChange("paymentStatus", "failed");
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Payment Failed",
+  //         text: "Payment could not be processed. Please try again.",
+  //         confirmButtonText: "OK",
+  //       });
+  //     });
+  //     razor.open();
+  //   } catch (error) {
+  //     handleBookingChange("paymentStatus", "failed");
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Payment Error",
+  //       text: "Failed to initiate payment. Please try again.",
+  //       confirmButtonText: "OK",
+  //     });
+  //     console.error("Payment error:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const BookAppoinment = async () => {
     setLoading(true);
     Swal.fire({
-      title: "Processing Payment",
-      html: "Please wait while we process your payment...",
+      title: "Processing Booking",
+      html: "Please wait while we complete your booking...",
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -337,132 +485,63 @@ const Bookingform = () => {
     });
 
     const userId = secureLocalStorage.getItem("medicityuser");
-    const amountToPay = paymentInfo.finalTotal;
 
     try {
-      // Step 1: Create Razorpay Order
-      const orderResponse = await axios.post(
-        `${process.env.REACT_APP_API_KEY}createRazorpayOrder`,
-        {
-          amount: amountToPay,
-        }
-      );
+      const bookingData = {
+        userId,
+        packageIds: cartIds || [],
 
-      const { id: orderId } = orderResponse.data;
-
-      // Step 2: Open Razorpay Checkout
-      const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY,
-        amount: amountToPay * 100,
-        currency: "INR",
-        name: "Medicity Booking",
-        description: "Package Payment",
-        order_id: orderId,
-        handler: async function (response) {
-          try {
-            Swal.fire({
-              title: "Processing Booking",
-              html: "Your payment was successful! Completing your booking...",
-              allowOutsideClick: false,
-              didOpen: () => {
-                Swal.showLoading();
-              },
-            });
-
-            // Step 3: After Payment Success, Call bookedOrder API
-            const bookingData = {
-              userId,
-              packageIds: cartIds.toString(),
-              members: bookingDetails.selectedDependants.join(","),
-              address: bookingDetails.selectedAddressId.toString(),
-              discountAmount: paymentInfo.discount,
-              totalAmount: paymentInfo.totalAmount,
-              payableAmount: paymentInfo.finalTotal,
-              offerAmount: "10",
-              giftAmount: "20",
-              paymentStatus: true,
-              paymentMode: "Online",
-              paymentId: response.razorpay_payment_id,
-              report: bookingDetails.report,
-              sampleCollectDate: bookingDetails.selectedDate,
-              sampleCollectTime: bookingDetails.selectedSlot,
-            };
-
-            const bookRes = await axios.post(
-              `${process.env.REACT_APP_API_KEY}bookedOrder`,
-              bookingData
-            );
-
-            setbookingid(bookRes.data.data.bookingId);
-            handleBookingChange("paymentStatus", "success");
-            GetAddress();
-
-            Swal.fire({
-              icon: "success",
-              title: "Booking Successful!",
-              text: bookRes.data.message,
-              showCancelButton: true,
-              confirmButtonText: "View Booking",
-              cancelButtonText: "Close",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                Navigate(`/Bookingappoinment`);
-              } else {
-                nextStep(); // Only proceed to step 4 if payment was successful
-              }
-            });
-          } catch (error) {
-            handleBookingChange("paymentStatus", "failed");
-            Swal.fire({
-              icon: "error",
-              title: "Booking Failed",
-              text: "Your payment was successful but booking failed. Please contact support.",
-              confirmButtonText: "OK",
-            });
-            console.error("Booking error:", error);
-          }
-        },
-        prefill: {
-          name: "Test User",
-          email: "user@medicity",
-          contact: "1234567890",
-        },
-        theme: {
-          color: "#0e76a8",
-        },
-        modal: {
-          ondismiss: function () {
-            handleBookingChange("paymentStatus", "failed");
-            Swal.fire({
-              icon: "info",
-              title: "Payment Cancelled",
-              text: "You cancelled the payment process",
-              confirmButtonText: "OK",
-            });
-          },
-        },
+        members: bookingDetails.selectedDependants.join(","),
+        address: bookingDetails.selectedAddressId.toString(),
+        discountAmount: paymentInfo.totalDiscount,
+        totalAmount: paymentInfo.grandTotal,
+        payableAmount: paymentInfo.grandTotal,
+        offerAmount: "10",
+        giftAmount: "20",
+        paymentStatus: true, // assume success for testing
+        paymentMode: "Testing",
+        paymentId: "test_payment_id_123", // mock ID
+        report: bookingDetails.report,
+        sampleCollectDate: bookingDetails.selectedDate,
+        sampleCollectTime: bookingDetails.selectedSlot,
+        testDetail: JSON.parse(localStorage.getItem("testDetails")),
       };
 
-      const razor = new window.Razorpay(options);
-      razor.on("payment.failed", function (response) {
-        handleBookingChange("paymentStatus", "failed");
-        Swal.fire({
-          icon: "error",
-          title: "Payment Failed",
-          text: "Payment could not be processed. Please try again.",
-          confirmButtonText: "OK",
-        });
+      const bookRes = await axios.post(
+        `${process.env.REACT_APP_API_KEY}bookedOrder`,
+        bookingData
+      );
+
+      setbookingid(bookRes.data.data.bookingId);
+      handleBookingChange("paymentStatus", "success");
+      GetAddress();
+
+      Swal.fire({
+        icon: "success",
+        title: "Booking Successful!",
+        text: bookRes.data.message,
+        showCancelButton: true,
+        confirmButtonText: "View Booking",
+        cancelButtonText: "Close",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Navigate(`/Bookingappoinment`);
+          localStorage.removeItem("paymentInfo");
+          localStorage.removeItem("packageIds");
+          localStorage.removeItem("testDetails");
+        } else {
+          nextStep();
+        }
       });
-      razor.open();
     } catch (error) {
       handleBookingChange("paymentStatus", "failed");
       Swal.fire({
         icon: "error",
-        title: "Payment Error",
-        text: "Failed to initiate payment. Please try again.",
+        title: "Booking Failed",
+        text: "There was an error while booking. Please try again.",
         confirmButtonText: "OK",
       });
-      console.error("Payment error:", error);
+      console.error("Booking error:", error);
     } finally {
       setLoading(false);
     }
@@ -934,25 +1013,46 @@ const Bookingform = () => {
                 <div className="pt-3 border-top booking-more-info">
                   <h6 className="mb-3">Payment Info</h6>
                   <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                    <p className="mb-0">Echocardiograms</p>
-                    <span className="fw-medium d-block">₹200</span>
+                    <p className="mb-0">Packages Total</p>
+                    <span className="fw-medium d-block">
+                      ₹{paymentInfo.packageTotal}
+                    </span>
                   </div>
                   <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
-                    <p className="mb-0">Booking Fees</p>
-                    <span className="fw-medium d-block">₹20</span>
+                    <p className="mb-0">Tests Total</p>
+                    <span className="fw-medium d-block">
+                      ₹{paymentInfo.testTotal}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Subtotal</p>
+                    <span className="fw-medium d-block">
+                      ₹{paymentInfo.subtotal}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
+                    <p className="mb-0">Diagnostic Fee</p>
+                    <span className="fw-medium text-danger d-block">
+                      ₹{paymentInfo.diagnosticFee}
+                    </span>
                   </div>
                   <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                     <p className="mb-0">Tax</p>
-                    <span className="fw-medium d-block">₹18</span>
+                    <span className="fw-medium text-danger d-block">
+                      ₹{paymentInfo.tax}
+                    </span>
                   </div>
+
                   <div className="d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between mb-2">
                     <p className="mb-0">Discount</p>
-                    <span className="fw-medium text-danger d-block">-₹15</span>
+                    <span className="fw-medium text-danger d-block">
+                      ₹{paymentInfo.totalDiscount}
+                    </span>
                   </div>
                 </div>
                 <div className="bg-primary d-flex align-items-center flex-wrap rpw-gap-2 justify-content-between p-3 rounded">
                   <h6 className="text-white">Total</h6>
-                  <h6 className="text-white">₹{paymentInfo.totalAmount}</h6>
+                  <h6 className="text-white">₹{paymentInfo.grandTotal}</h6>
                 </div>
               </div>
             </div>
@@ -1017,7 +1117,7 @@ const Bookingform = () => {
                       <div className="mb-3">
                         <label className="form-label">Total Amount</label>
                         <div className="form-plain-text">
-                          ₹{paymentInfo.totalAmount}
+                          ₹{paymentInfo.grandTotal}
                         </div>
                       </div>
                     </div>
@@ -1025,7 +1125,7 @@ const Bookingform = () => {
                       <div className="mb-3">
                         <label className="form-label">Payable Amount</label>
                         <div className="form-plain-text">
-                          ₹{paymentInfo.finalTotal}
+                          ₹{paymentInfo.grandTotal}
                         </div>
                       </div>
                     </div>

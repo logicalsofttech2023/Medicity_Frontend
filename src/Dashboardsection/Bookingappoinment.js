@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import secureLocalStorage from "react-secure-storage";
 import ProfileSidebar from "./ProfileSidebar";
 import { DNA } from "react-loader-spinner";
+import Swal from "sweetalert2";
 
 const Bookingappoinment = () => {
   const [Orderlist, setOrderlist] = useState();
@@ -11,28 +12,99 @@ const Bookingappoinment = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [reportStatus, setReportStatus] = useState({});
 
   useEffect(() => {
     BookingOrderlist();
-  }, [0]);
+  }, []);
+
   const BookingOrderlist = async () => {
     setLoading(true);
     const data = {
       userId: secureLocalStorage.getItem("medicityuser"),
     };
 
-    axios
-      .post(`${process.env.REACT_APP_API_KEY}bookingOrder_list`, data)
-      .then((res) => {
-        setOrderlist(res.data.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_KEY}bookingOrder_list`,
+        data
+      );
+      setOrderlist(res.data.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelBooking = async (bookingId, reason) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_KEY}cancelBooking`,
+        {
+          bookingId: bookingId,
+          reason: reason,
+          userId: secureLocalStorage.getItem("medicityuser"),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      throw error;
+    }
+  };
+
+  const handleCancelConfirmation = async (bookingId) => {
+    const { value: reason } = await Swal.fire({
+      title: "Cancel Appointment",
+      input: "textarea",
+      inputLabel: "Reason for Cancellation",
+      inputPlaceholder: "Please specify your reason...",
+      inputAttributes: {
+        "aria-label": "Type your cancellation reason here",
+      },
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Confirm Cancellation",
+      preConfirm: (reason) => {
+        if (!reason) {
+          Swal.showValidationMessage("Reason is required");
+        }
+        return reason;
+      },
+    });
+
+    if (reason) {
+      try {
+        const result = await Swal.fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, cancel it!",
+        });
+
+        if (result.isConfirmed) {
+          const response = await cancelBooking(bookingId, reason);
+          if (response.success) {
+            Swal.fire(
+              "Cancelled!",
+              "Your appointment has been cancelled.",
+              "success"
+            );
+            BookingOrderlist();
+          }
+        }
+      } catch (error) {
+        Swal.fire(
+          "Error!",
+          error.message || "Failed to cancel booking",
+          "error"
+        );
+      }
+    }
   };
 
   const filteredData = Orderlist?.filter((data) => {
@@ -42,7 +114,7 @@ const Bookingappoinment = () => {
     return true;
   });
 
-  // Pagination for filtered data
+  // Pagination logic remains the same
   const totalPages = Math.ceil(filteredData?.length / itemsPerPage) || 1;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -53,10 +125,28 @@ const Bookingappoinment = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Reset to page 1 when tab changes
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setCurrentPage(1);
+  };
+
+  const checkReportAvailability = async (memberId, billNo) => {
+    try {
+      const formData = new FormData();
+      formData.append("empId", "KLR099101");
+      formData.append("secretKey", "KLR@74123");
+      formData.append("member_id", memberId);
+      formData.append("bill_no", billNo);
+
+      const response = await axios.post(
+        "https://medicityguwahati.in/klar_diag/api/getReport/",
+        formData
+      );
+      return response.data.response[0];
+    } catch (error) {
+      console.error("Error checking report:", error);
+      return { status: "error", message: "Failed to check report status" };
+    }
   };
 
   return (
@@ -142,81 +232,81 @@ const Bookingappoinment = () => {
               </div>
 
               <div className="appointment-tab-head">
-                    <div className="appointment-tabs">
-                      <ul
-                        className="nav nav-pills inner-tab "
-                        id="pills-tab"
-                        role="tablist"
+                <div className="appointment-tabs">
+                  <ul
+                    className="nav nav-pills inner-tab "
+                    id="pills-tab"
+                    role="tablist"
+                  >
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link active"
+                        id="pills-upcoming-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-upcoming"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-upcoming"
+                        aria-selected="false"
+                        onClick={() => handleTabChange("upcoming")}
                       >
-                        <li className="nav-item" role="presentation">
-                          <button
-                            className="nav-link active"
-                            id="pills-upcoming-tab"
-                            data-bs-toggle="pill"
-                            data-bs-target="#pills-upcoming"
-                            type="button"
-                            role="tab"
-                            aria-controls="pills-upcoming"
-                            aria-selected="false"
-                            onClick={() => handleTabChange("upcoming")}
-                          >
-                            Upcoming
-                            <span>
-                              {
-                                Orderlist?.filter(
-                                  (order) => order?.bookingStatus === 0
-                                ).length
-                              }
-                            </span>
-                          </button>
-                        </li>
-                        <li className="nav-item" role="presentation">
-                          <button
-                            className="nav-link"
-                            id="pills-cancel-tab"
-                            data-bs-toggle="pill"
-                            data-bs-target="#pills-cancel"
-                            type="button"
-                            role="tab"
-                            aria-controls="pills-cancel"
-                            aria-selected="true"
-                            onClick={() => handleTabChange("cancel")}
-                          >
-                            Cancelled
-                            <span>
-                              {
-                                Orderlist?.filter(
-                                  (order) => order?.bookingStatus === 2
-                                ).length
-                              }
-                            </span>
-                          </button>
-                        </li>
-                        <li className="nav-item" role="presentation">
-                          <button
-                            className="nav-link"
-                            id="pills-complete-tab"
-                            data-bs-toggle="pill"
-                            data-bs-target="#pills-complete"
-                            type="button"
-                            role="tab"
-                            aria-controls="pills-complete"
-                            aria-selected="true"
-                            onClick={() => handleTabChange("complete")}
-                          >
-                            Completed
-                            <span>
-                              {
-                                Orderlist?.filter(
-                                  (order) => order?.bookingStatus === 1
-                                ).length
-                              }
-                            </span>
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+                        Upcoming
+                        <span>
+                          {
+                            Orderlist?.filter(
+                              (order) => order?.bookingStatus === 0
+                            ).length
+                          }
+                        </span>
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        id="pills-cancel-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-cancel"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-cancel"
+                        aria-selected="true"
+                        onClick={() => handleTabChange("cancel")}
+                      >
+                        Cancelled
+                        <span>
+                          {
+                            Orderlist?.filter(
+                              (order) => order?.bookingStatus === 2
+                            ).length
+                          }
+                        </span>
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        id="pills-complete-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-complete"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-complete"
+                        aria-selected="true"
+                        onClick={() => handleTabChange("complete")}
+                      >
+                        Completed
+                        <span>
+                          {
+                            Orderlist?.filter(
+                              (order) => order?.bookingStatus === 1
+                            ).length
+                          }
+                        </span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
               {loading ? (
                 <div className="d-flex justify-content-center my-5">
@@ -231,7 +321,6 @@ const Bookingappoinment = () => {
                 </div>
               ) : currentItems?.length > 0 ? (
                 <>
-                  
                   <div className="tab-content appointment-tab-content">
                     <div
                       className="tab-pane fade show active"
@@ -314,14 +403,106 @@ const Bookingappoinment = () => {
                                     <i className="isax isax-eye4" />
                                   </Link>
                                 </li>
+                                {activeTab === "upcoming" && (
+                                  <li>
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleCancelConfirmation(data?._id);
+                                      }}
+                                    >
+                                      <i className="isax isax-close-circle text-danger" />
+                                    </a>
+                                  </li>
+                                )}
                               </ul>
-                              <a
-                                href="#"
-                                className="btn btn-md btn-primary-gradient ms-2"
-                              >
-                                <i className="isax isax-calendar-tick5 me-1" />
-                                Attend
-                              </a>
+
+                              {(activeTab === "upcoming" ||
+                                activeTab === "complete") && (
+                                <a
+                                  href="#"
+                                  className="btn btn-md btn-primary-gradient ms-2"
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    const reportKey = `${data?.memberId}-${data?.bill_no}`;
+
+                                    // If not checked yet
+                                    if (!reportStatus[reportKey]) {
+                                      const result =
+                                        await checkReportAvailability(
+                                          data?.memberId,
+                                          data?.bill_no
+                                        );
+                                      setReportStatus((prev) => ({
+                                        ...prev,
+                                        [reportKey]: result,
+                                      }));
+
+                                      if (result.url) {
+                                        window.open(result.url, "_blank");
+                                      } else {
+                                        Swal.fire({
+                                          icon: "info",
+                                          title: "Report Not Available",
+                                          text:
+                                            result.message ||
+                                            "Report not available yet",
+                                        });
+                                      }
+                                    } else {
+                                      // Show confirm dialog to re-check
+                                      const { isConfirmed } = await Swal.fire({
+                                        title: "Re-check Report?",
+                                        text: "Do you want to check the report again?",
+                                        icon: "question",
+                                        showCancelButton: true,
+                                        confirmButtonText: "Yes",
+                                        cancelButtonText: "No",
+                                      });
+
+                                      if (isConfirmed) {
+                                        const result =
+                                          await checkReportAvailability(
+                                            data?.memberId,
+                                            data?.bill_no
+                                          );
+                                        setReportStatus((prev) => ({
+                                          ...prev,
+                                          [reportKey]: result,
+                                        }));
+
+                                        if (result.url) {
+                                          window.open(result.url, "_blank");
+                                        } else {
+                                          Swal.fire({
+                                            icon: "info",
+                                            title: "Report Not Available",
+                                            text:
+                                              result.message ||
+                                              "Report not available yet",
+                                          });
+                                        }
+                                      } else if (reportStatus[reportKey]?.url) {
+                                        window.open(
+                                          reportStatus[reportKey].url,
+                                          "_blank"
+                                        );
+                                      } else {
+                                        Swal.fire({
+                                          icon: "info",
+                                          title: "Report Not Available",
+                                          text:
+                                            reportStatus[reportKey]?.message ||
+                                            "Report not available yet",
+                                        });
+                                      }
+                                    }
+                                  }}
+                                >
+                                  View Report
+                                </a>
+                              )}
                             </li>
                           </ul>
                         </div>
@@ -406,14 +587,111 @@ const Bookingappoinment = () => {
                                       <i className="isax isax-eye4" />
                                     </Link>
                                   </li>
+                                  {activeTab === "upcoming" && (
+                                    <li>
+                                      <a
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleCancelConfirmation(data?._id);
+                                        }}
+                                      >
+                                        <i className="isax isax-close-circle text-danger" />
+                                        Cancel Appointment
+                                      </a>
+                                    </li>
+                                  )}
                                 </ul>
-                                <a
-                                  href="#"
-                                  className="btn btn-md btn-primary-gradient ms-2"
-                                >
-                                  <i className="isax isax-calendar-tick5 me-1" />
-                                  Attend
-                                </a>
+                                {(activeTab === "upcoming" ||
+                                  activeTab === "complete") && (
+                                  <a
+                                    href="#"
+                                    className="btn btn-md btn-primary-gradient ms-2"
+                                    onClick={async (e) => {
+                                      e.preventDefault();
+                                      const reportKey = `${data?.memberId}-${data?.bill_no}`;
+
+                                      // If not checked yet
+                                      if (!reportStatus[reportKey]) {
+                                        const result =
+                                          await checkReportAvailability(
+                                            data?.memberId,
+                                            data?.bill_no
+                                          );
+                                        setReportStatus((prev) => ({
+                                          ...prev,
+                                          [reportKey]: result,
+                                        }));
+
+                                        if (result.url) {
+                                          window.open(result.url, "_blank");
+                                        } else {
+                                          Swal.fire({
+                                            icon: "info",
+                                            title: "Report Not Available",
+                                            text:
+                                              result.message ||
+                                              "Report not available yet",
+                                          });
+                                        }
+                                      } else {
+                                        // Show confirm dialog to re-check
+                                        const { isConfirmed } = await Swal.fire(
+                                          {
+                                            title: "Re-check Report?",
+                                            text: "Do you want to check the report again?",
+                                            icon: "question",
+                                            showCancelButton: true,
+                                            confirmButtonText: "Yes",
+                                            cancelButtonText: "No",
+                                          }
+                                        );
+
+                                        if (isConfirmed) {
+                                          const result =
+                                            await checkReportAvailability(
+                                              data?.memberId,
+                                              data?.bill_no
+                                            );
+                                          setReportStatus((prev) => ({
+                                            ...prev,
+                                            [reportKey]: result,
+                                          }));
+
+                                          if (result.url) {
+                                            window.open(result.url, "_blank");
+                                          } else {
+                                            Swal.fire({
+                                              icon: "info",
+                                              title: "Report Not Available",
+                                              text:
+                                                result.message ||
+                                                "Report not available yet",
+                                            });
+                                          }
+                                        } else if (
+                                          reportStatus[reportKey]?.url
+                                        ) {
+                                          window.open(
+                                            reportStatus[reportKey].url,
+                                            "_blank"
+                                          );
+                                        } else {
+                                          Swal.fire({
+                                            icon: "info",
+                                            title: "Report Not Available",
+                                            text:
+                                              reportStatus[reportKey]
+                                                ?.message ||
+                                              "Report not available yet",
+                                          });
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    View Report
+                                  </a>
+                                )}
                               </li>
                             </ul>
                           </div>

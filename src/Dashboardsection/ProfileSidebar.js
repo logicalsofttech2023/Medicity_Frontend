@@ -101,12 +101,12 @@ const ProfileSidebar = () => {
                   <span>Booking</span>
                 </Link>
               </li>
-              <li className={currentPath === "/Reports" ? "active" : ""}>
+              {/* <li className={currentPath === "/Reports" ? "active" : ""}>
                 <Link to="/Reports">
                   <i className="isax isax-star-1" />
                   <span>Reports</span>
                 </Link>
-              </li>
+              </li> */}
               <li className={currentPath === "/Familymember" ? "active" : ""}>
                 <Link to="/Familymember">
                   <i className="isax isax-user-octagon" />
